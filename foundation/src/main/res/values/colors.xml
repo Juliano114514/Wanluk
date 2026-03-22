@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+  <!-- 主题色：primary / primary_dark 不随深浅色资源切换；仅 theme_primary_light 在 values-night 中覆盖 -->
+  <color name="theme_primary">#FFC02C24</color>
+  <color name="theme_primary_dark">#FFA3201A</color>
+  <color name="theme_primary_light">#F0FBEBEA</color>
+  <color name="theme_on_primary">#FFFFFFFF</color>
+
+  <!-- 文本色：黑 + Alpha 层级（对齐 Material on-surface 强调度） -->
+  <color name="text_title">#E6000000</color>
+  <color name="text_body">#B3000000</color>
+  <color name="text_secondary">#8A000000</color>
+  <color name="text_hint">#66000000</color>
+  <color name="text_disabled">#42000000</color>
+
+  <!-- 背景：页面为实底；卡片 / 浮层半透，叠在页面上形成轻微纵深 -->
+  <color name="bg_page">#FFF2F4F7</color>
+  <color name="bg_card">#F2FFFFFF</color>
+  <color name="bg_elevated">#FAFFFFFF</color>
+
+  <!-- 分割线 / 边框：低对比 hairline，避免纯灰实色块感 -->
+  <color name="divider">#14000000</color>
+  <color name="border">#24000000</color>
+
+  <!-- 状态色：略透明，叠在表面或列表底时过渡更自然 (保留原样，成功依然是绿色) -->
+  <color name="status_success">#E600DC5A</color>
+  <color name="status_warning">#E6FF9900</color>
+  <color name="status_error">#E6FF3333</color>
+
+  <!-- 基础色 -->
+  <color name="black">#FF000000</color>
+  <color name="black_90">#CC000000</color>
+  <color name="white">#FFFFFFFF</color>
+
+</resources>

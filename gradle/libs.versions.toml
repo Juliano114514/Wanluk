@@ -1,22 +1,125 @@
 [versions]
+# Android Gradle Plugin
 agp = "8.11.0"
+
+# Kotlin 语言与 JVM 插件
 kotlin = "2.0.21"
+kotlinReflect = "2.0.21"
+kotlinStdlib = "2.0.21"
+kotlinTest = "2.0.21"
+jetbrainsKotlinJvm = "2.0.21"
+# Kotlin 2.0.21 对应的稳定 KSP 版本
+ksp = "2.0.21-1.0.27"
+
+# AndroidX 核心与 View 体系
 coreKtx = "1.10.1"
+lifecycleRuntimeKtx = "2.6.1"
+lifecycleViewmodelKtx = "2.6.1"
+appcompat = "1.6.1"
+material = "1.10.0"
+constraintlayout = "2.2.1"
+recyclerview = "1.4.0"
+cardview = "1.0.0"
+
+# Jetpack Compose
+composeBom = "2024.09.00"
+
+# Kotlinx Coroutines
+coroutines = "1.8.1"
+
+# Koin 依赖注入
+koin = "3.5.6"
+
+# 网络、JSON 与日志
+gson = "2.14.0"
+okhttp = "4.12.0"
+logger = "2.2.0"
+
+# Room 持久化
+room = "2.6.1"
+
+# 单元测试与 Android 仪器测试
 junit = "4.13.2"
 junitVersion = "1.1.5"
 espressoCore = "3.5.1"
-appcompat = "1.6.1"
-material = "1.10.0"
+runner = "1.5.2"
+core = "1.5.0"
 
 [libraries]
+# AndroidX 核心与 Material / View 布局
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
+androidx-cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
+
+# Jetpack Compose（BOM 与各 UI 模块）
+androidx-activity-compose = { group = "androidx.activity", name = "activity-compose" }
+androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+
+# Kotlin 标准库、反射与 kotlin-test
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlinReflect" }
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlinStdlib" }
+kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlinTest" }
+
+# Koin
+koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
+koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
+koin-androidx-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
+koin-test = { group = "io.insert-koin", name = "koin-test", version.ref = "koin" }
+
+# Kotlinx Coroutines
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+
+# Gson、OkHttp、Logger
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+logger = { module = "com.orhanobut:logger", version.ref = "logger" }
+
+# KSP 开发 API (写处理器需要)
+symbol-processing-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
+
+# Room 依赖 (提前配置好，L2 和 foundation 用)
+room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+
+# JUnit、AndroidX Test、Espresso、Compose 测试
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
-androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-runner = { group = "androidx.test", name = "runner", version.ref = "runner" }
+androidx-core = { group = "androidx.test", name = "core", version.ref = "core" }
+
+[bundles]
+compose = ["androidx-activity-compose", "androidx-ui", "androidx-ui-graphics", "androidx-ui-tooling-preview", "androidx-material3"]
+androidx-base = ["androidx-core-ktx", "androidx-appcompat", "material"]
+android-test = ["androidx-junit", "androidx-espresso-core"]
+room = ["room-runtime", "room-ktx"]
+coroutines = ["kotlinx-coroutines-android", "kotlinx-coroutines-core"]
 
 [plugins]
+# Android Gradle 插件（application / library / KMP library）
 android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 
+# Kotlin 编译器插件
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
+
+# KSP
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

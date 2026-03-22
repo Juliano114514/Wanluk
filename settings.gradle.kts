@@ -21,4 +21,8 @@ dependencyResolutionManagement {
 
 rootProject.name = "wanluk"
 include(":app")
- 
+include(":foundation")
+include(":lib-room")
+include(":lib-compose-ui")
+include(":lib-record")
+include(":lib-exoprt")

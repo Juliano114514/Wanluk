@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+  <!-- 深浅色下唯一切换的 theme_primary_* 资源（对应 Compose primaryContainer / 定制 primaryLightNight） -->
+  <!-- 替换为带有 D9 (85%) 透明度的暗红色，适配夜间模式的深邃感 -->
+  <color name="theme_primary_light">#D93D1E1E</color>
+
+  <!-- 文本：白 + Alpha 层级，与 Material dark on-surface 习惯一致 -->
+  <color name="text_title">#F2FFFFFF</color>
+  <color name="text_body">#CCFFFFFF</color>
+  <color name="text_secondary">#99FFFFFF</color>
+  <color name="text_hint">#66FFFFFF</color>
+  <color name="text_disabled">#42FFFFFF</color>
+
+  <!-- 背景：page 实底；card / elevated 半透叠层 -->
+  <color name="bg_page">#FF0F0F0F</color>
+  <color name="bg_card">#D91E1E1E</color>
+  <color name="bg_elevated">#E62C2C2C</color>
+
+  <!-- 分隔：浅色 hairline，避免与表面糊成一块实色 -->
+  <color name="divider">#26FFFFFF</color>
+  <color name="border">#33FFFFFF</color>
+
+  <!-- 状态色：深色下略柔化，仍保持语义可辨 (保留原样) -->
+  <color name="status_success">#E60FD852</color>
+  <color name="status_warning">#E6FFB74D</color>
+  <color name="status_error">#E6FF5252</color>
+
+</resources>

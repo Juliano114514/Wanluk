@@ -1,0 +1,40 @@
+def requireWanlukInt = { String name ->
+  def value = findProperty(name)
+  if (value == null) {
+    throw new GradleException("Missing gradle property: ${name}")
+  }
+  return value.toString().toInteger()
+}
+
+def requireWanlukString = { String name ->
+  def value = findProperty(name)
+  if (value == null) {
+    throw new GradleException("Missing gradle property: ${name}")
+  }
+  return value.toString()
+}
+
+def wanlukCompileSdk = requireWanlukInt("wanluk.compileSdk")
+def wanlukMinSdk = requireWanlukInt("wanluk.minSdk")
+def wanlukJvmTarget = requireWanlukString("wanluk.jvmTarget")
+
+android {
+  compileSdk = wanlukCompileSdk
+
+  defaultConfig {
+    minSdk = wanlukMinSdk
+  }
+
+  compileOptions {
+    sourceCompatibility = JavaVersion.toVersion(wanlukJvmTarget)
+    targetCompatibility = JavaVersion.toVersion(wanlukJvmTarget)
+  }
+}
+
+plugins.withId("com.android.application") {
+  android {
+    defaultConfig {
+      targetSdk = requireWanlukInt("wanluk.targetSdk")
+    }
+  }
+}

@@ -6,12 +6,16 @@
       <GradleProjectSettings>
         <option name="testRunner" value="CHOOSE_PER_TEST" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleHome" value="C:\Program Files\gradle-8.11.1" />
         <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/foundation" />
+            <option value="$PROJECT_DIR$/lib-compose-ui" />
+            <option value="$PROJECT_DIR$/lib-exoprt" />
+            <option value="$PROJECT_DIR$/lib-record" />
+            <option value="$PROJECT_DIR$/lib-room" />
           </set>
         </option>
       </GradleProjectSettings>
