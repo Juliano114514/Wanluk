@@ -1,6 +1,7 @@
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.android)
+  alias(libs.plugins.ksp)
 }
 
 android {
@@ -40,4 +41,14 @@ dependencies {
   testImplementation(libs.junit)
   androidTestImplementation(libs.androidx.junit)
   androidTestImplementation(libs.androidx.espresso.core)
+  // Room 数据库
+  implementation(libs.room.runtime)
+  implementation(libs.room.ktx)
+  ksp(libs.room.compiler)
+  // 协程相关
+  implementation(libs.lifecycle.viewmodel.ktx)
+  implementation(libs.lifecycle.runtime.ktx)
+  implementation(libs.coroutines.android)
+  // JSON 解析
+  implementation(libs.gson)
 }
