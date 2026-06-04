@@ -42,6 +42,10 @@ dependencies {
 
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.lifecycle.viewmodel.ktx)
+  implementation(libs.androidx.lifecycle.viewmodel.compose)
+  implementation(libs.androidx.lifecycle.runtime.compose)
+  implementation(libs.koin.android)
+  implementation(libs.koin.androidx.compose)
   implementation(libs.gson)
 
   testImplementation(libs.junit)

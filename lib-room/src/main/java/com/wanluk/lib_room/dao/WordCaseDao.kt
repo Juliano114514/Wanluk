@@ -20,4 +20,7 @@ interface WordCaseDao {
 
   @Query("SELECT * FROM word_cases WHERE yun = :yunInput")
   fun getWordCasesByYun(yunInput: String): Flow<List<WordCaseEntity>>
+
+  @Query("SELECT COUNT(*) FROM word_cases")
+  suspend fun getWordCaseCount(): Int
 }

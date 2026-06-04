@@ -13,5 +13,6 @@ android {
 dependencies {
   implementation(project(":foundation"))
   implementation(libs.bundles.room)
+  implementation(libs.koin.android)
   ksp(libs.room.compiler)
 }
