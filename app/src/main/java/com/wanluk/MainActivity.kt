@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wanluk.lib_room.entities.WordCaseEntity
 import com.wanluk.ui.demo.WordCaseDemoViewModel
+import com.wanluk.ui.demo.temp.rarityfilter.DemoRarityFilterBar
 import com.wanluk.ui.theme.WanlukTheme
 import org.koin.androidx.compose.koinViewModel
 
@@ -48,12 +49,19 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun WordCaseDemoScreen(viewModel: WordCaseDemoViewModel) {
   val wordCases by viewModel.wordCases.collectAsStateWithLifecycle()
+  val rarityFilter by viewModel.demoRarityFilterState.collectAsStateWithLifecycle()
 
   Column(modifier = Modifier.fillMaxSize()) {
     Text(
       text = "字例预览（${wordCases.size} 条）",
       style = MaterialTheme.typography.titleMedium,
-      modifier = Modifier.padding(16.dp),
+      modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp),
+    )
+    // TODO(demo): 发布前删除 DemoRarityFilterBar 及 ViewModel 罕度筛选状态
+    DemoRarityFilterBar(
+      selected = rarityFilter,
+      onSelected = viewModel::onDemoRarityFilterSelected,
+      modifier = Modifier.padding(vertical = 8.dp),
     )
     LazyVerticalGrid(
       columns = GridCells.Adaptive(minSize = 96.dp),
@@ -89,6 +97,11 @@ private fun WordCaseCard(item: WordCaseEntity) {
         text = "${item.she}·${item.yun}",
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
+      )
+      Text(
+        text = "罕${item.rarity}",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.outline,
       )
     }
   }

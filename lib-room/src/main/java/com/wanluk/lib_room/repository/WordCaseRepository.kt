@@ -18,16 +18,22 @@ class WordCaseRepository(
   fun getWordCasesByShe(she: String): Flow<List<WordCaseEntity>> =
     wordCaseDao.getWordCasesByShe(she)
 
-  /** 表为空时从 assets 灌入内置韵目表，避免重复导入。 */
+  /** 表为空或行数与内置字表不一致时重新灌入，避免 schema/字表升级后数据陈旧。 */
   suspend fun ensureBuiltinWordCasesImported() = withContext(Dispatchers.IO) {
-    if (wordCaseDao.getWordCaseCount() > 0) return@withContext
+    val count = wordCaseDao.getWordCaseCount()
+    if (count == BUILTIN_ROW_COUNT) return@withContext
+    if (count > 0) wordCaseDao.deleteAllWordCases()
+    importBuiltinCsv()
+  }
+
+  private suspend fun importBuiltinCsv() {
     context.assets.open(BUILTIN_CSV_ASSET).use { stream ->
-      val entities = YunmuCsvImporter.parse(stream)
-      wordCaseDao.insertWordCases(entities)
+      wordCaseDao.insertWordCases(YunmuCsvImporter.parse(stream))
     }
   }
 
   companion object {
     const val BUILTIN_CSV_ASSET = "韵目表.csv"
+    const val BUILTIN_ROW_COUNT = 10_292
   }
 }

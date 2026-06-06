@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import com.wanluk.lib_room.dao.WordCaseDao
 import com.wanluk.lib_room.entities.WordCaseEntity
 
-@Database(entities = [WordCaseEntity::class], version = 1, exportSchema = false)
+@Database(entities = [WordCaseEntity::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
   abstract fun wordCaseDao(): WordCaseDao
 }

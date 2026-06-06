@@ -23,4 +23,7 @@ interface WordCaseDao {
 
   @Query("SELECT COUNT(*) FROM word_cases")
   suspend fun getWordCaseCount(): Int
+
+  @Query("DELETE FROM word_cases")
+  suspend fun deleteAllWordCases()
 }
