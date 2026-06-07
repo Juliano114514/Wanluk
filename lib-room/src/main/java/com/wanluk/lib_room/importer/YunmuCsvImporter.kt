@@ -8,21 +8,22 @@ import java.io.InputStreamReader
 /**
  * 内置 [韵目表.csv] 解析器：续行继承、等→Int 转换，映射 README §2.1.3 落库列。
  *
- * 表头（11 列）：聲,呼,等,韻,調,組,攝,單字,多音,原註,罕度
+ * 表头（13 列）：id,聲,呼,等,韻,調,組,攝,單字,多音,组词,原註,罕度
  */
 object YunmuCsvImporter {
 
-  private const val COL_SHENG = 0
-  private const val COL_HU = 1
-  private const val COL_DENG = 2
-  private const val COL_YUN = 3
-  private const val COL_DIAO = 4
-  private const val COL_ZU = 5
-  private const val COL_SHE = 6
-  private const val COL_CORE_CHAR = 7
-  private const val COL_REMARK = 9
-  private const val COL_RARITY = 10
-  private const val MIN_COLUMNS = 11
+  private const val COL_SHENG = 1
+  private const val COL_HU = 2
+  private const val COL_DENG = 3
+  private const val COL_YUN = 4
+  private const val COL_DIAO = 5
+  private const val COL_ZU = 6
+  private const val COL_SHE = 7
+  private const val COL_CORE_CHAR = 8
+  private const val COL_PHRASES = 10
+  private const val COL_REMARK = 11
+  private const val COL_RARITY = 12
+  private const val MIN_COLUMNS = 13
 
   fun parse(inputStream: InputStream): List<WordCaseEntity> {
     val reader = BufferedReader(InputStreamReader(inputStream, Charsets.UTF_8))
@@ -55,7 +56,7 @@ object YunmuCsvImporter {
             zu = coords.zu,
             she = coords.she,
             coreChar = coreChar,
-            phrases = null,
+            phrases = tokens.getOrNull(COL_PHRASES)?.trim()?.takeIf { it.isNotEmpty() },
             remark = tokens.getOrNull(COL_REMARK)?.trim()?.takeIf { it.isNotEmpty() },
             rarity = parseRarity(tokens.getOrNull(COL_RARITY)),
           )
