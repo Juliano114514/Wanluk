@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wanluk.lib_room.entities.WordCaseEntity
 import com.wanluk.ui.demo.WordCaseDemoViewModel
+import com.wanluk.ui.demo.temp.displaymode.DisplayMode
+import com.wanluk.ui.demo.temp.displaymode.DisplayModeToggle
 import com.wanluk.ui.demo.temp.rarityfilter.DemoRarityFilterBar
 import com.wanluk.ui.demo.temp.wordcasedetail.WordCaseDemoCard
 import com.wanluk.ui.demo.temp.wordcasedetail.WordCaseDetailOverlay
@@ -54,6 +56,7 @@ private fun WordCaseDemoScreen(viewModel: WordCaseDemoViewModel) {
   val rarityFilter by viewModel.demoRarityFilterState.collectAsStateWithLifecycle()
   // TODO(demo): 发布前删除详情浮层选中态及 temp/wordcasedetail 包
   var detailSelection by remember { mutableStateOf<WordCaseDetailSelection?>(null) }
+  var displayMode by remember { mutableStateOf(DisplayMode.CHAR) }
 
   Box(modifier = Modifier.fillMaxSize()) {
     Column(modifier = Modifier.fillMaxSize()) {
@@ -68,6 +71,16 @@ private fun WordCaseDemoScreen(viewModel: WordCaseDemoViewModel) {
         onSelected = viewModel::onDemoRarityFilterSelected,
         modifier = Modifier.padding(vertical = 8.dp),
       )
+      DisplayModeToggle(
+        current = displayMode,
+        onToggle = {
+          displayMode = when (displayMode) {
+            DisplayMode.CHAR -> DisplayMode.PHRASES
+            DisplayMode.PHRASES -> DisplayMode.CHAR
+          }
+        },
+        modifier = Modifier.padding(horizontal = 16.dp),
+      )
       LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 96.dp),
         contentPadding = PaddingValues(16.dp),
@@ -81,6 +94,7 @@ private fun WordCaseDemoScreen(viewModel: WordCaseDemoViewModel) {
             onClick = { clicked, bounds ->
               detailSelection = WordCaseDetailSelection(item = clicked, anchorBounds = bounds)
             },
+            displayMode = displayMode,
           )
         }
       }
