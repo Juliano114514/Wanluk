@@ -2,8 +2,8 @@ package com.wanluk.ui.demo
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wanluk.lib_room.entities.WordCaseEntity
-import com.wanluk.lib_room.repository.WordCaseRepository
+import com.wanluk.libroom.entity.WordCaseEntity
+import com.wanluk.libroom.repository.WordCaseRepository
 import com.wanluk.ui.demo.temp.rarityfilter.DemoRarityFilter
 import com.wanluk.ui.demo.temp.rarityfilter.filterByDemoRarity
 import kotlinx.coroutines.flow.MutableStateFlow

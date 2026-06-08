@@ -1,4 +1,4 @@
-package com.wanluk.lib_room.migration
+package com.wanluk.libroom.migration
 
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase

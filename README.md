@@ -47,15 +47,15 @@
 
 **Room 使用要点**：
 
-1. 首次启动若 `word_cases` 为空：从 `assets/韵目表.csv` 解析，**事务批量** `insertWordCases`。
+1. 首次启动若 `word_cases` 为空：从 `assets/WordCaseList.csv` 解析，**事务批量** `insertWordCases`。
 2. 字库页订阅 `getAllWordCases()` 或 `getWordCasesByShe` / `getWordCasesByYun` 的 `Flow`。
 3. Schema 变更走 Room Migration；`exportSchema` 建议二期改为 `true` 便于审查。
 
 **建议索引**（首次迁移）：`she`、`yun`、`core_char`；可选 `(sheng, yun, diao)` 组合筛选。
 
-#### 2.1.3 内置字表：`韵目表.csv` 数据契约
+#### 2.1.3 内置字表：`WordCaseList.csv` 数据契约
 
-资产路径：`:foundation/src/main/assets/韵目表.csv`（合并进 APK 后通过 `assets/韵目表.csv` 读取）。
+资产路径：`:foundation/src/main/assets/WordCaseList.csv`（合并进 APK 后通过 `assets/WordCaseList.csv` 读取）。
 
 | 项 | 现状 |
 |----|------|
@@ -153,7 +153,7 @@ insertWordCases(buffer) // 单事务
 
 | 能力 | 期别 |
 |------|------|
-| 内置 `韵目表.csv` 灌库 | 一期 |
+| 内置 `WordCaseList.csv` 灌库 | 一期 |
 | FAB 快速建字 | 一期 |
 | 用户 CSV 导入 | 一期 |
 | 收藏、字库导出 | 二期 |
@@ -260,7 +260,7 @@ insertWordCases(buffer) // 单事务
 
 **决议：Room 为唯一主存；JSON/CSV 仅作交换与备份。**
 
-- 内置 `韵目表.csv` 首次灌库写入 Room，UI 全程读 DAO 的 `Flow`。
+- 内置 `WordCaseList.csv` 首次灌库写入 Room，UI 全程读 DAO 的 `Flow`。
 - 不实现「JSON 主存再迁 Room」双轨，避免双份筛选逻辑与数据漂移。
 - Gson 保留在依赖中，仅服务导入导出与备份文件。
 
@@ -278,7 +278,7 @@ insertWordCases(buffer) // 单事务
 | 阶段 | 交付物 | 依赖 |
 |------|--------|------|
 | P0 | Compose BOM、`ComponentActivity`、`MainActivity`、Navigation 空壳 | — |
-| P1 | `assets/韵目表.csv`、CSV 导入器（含续行与 `deng` 转换）、按 `she` 字库列表 | Room 实体/DAO |
+| P1 | `assets/WordCaseList.csv`、CSV 导入器（含续行与 `deng` 转换）、按 `she` 字库列表 | Room 实体/DAO |
 | P2 | 顶栏搜索、多选作业列表、DataStore 持久化 | P1 |
 | P3 | 沉浸式录音页、MediaRecorder、命名与目录 | P2 |
 | P4 | 重录进 `.trash`、ZIP 分享 | P3 |
@@ -288,7 +288,7 @@ insertWordCases(buffer) // 单事务
 
 - 包名、路径统一 `com.wanluk`（勿用旧稿 `com.linguistics.recorder`）。
 - P0 须补齐 Compose 依赖（当前工程为 AppCompat 骨架）。
-- 内置 CSV 位于 `:foundation/src/main/assets/韵目表.csv`，随 `:foundation` 依赖合并进 APK assets。
+- 内置 CSV 位于 `:foundation/src/main/assets/WordCaseList.csv`，随 `:foundation` 依赖合并进 APK assets。
 
 ---
 
@@ -311,4 +311,4 @@ insertWordCases(buffer) // 单事务
 
 ---
 
-*文档版本：2026-06 · 字表行数以 `韵目表.csv`（10292 条数据行）为准。*
+*文档版本：2026-06 · 字表行数以 `WordCaseList.csv`（10292 条数据行）为准。*

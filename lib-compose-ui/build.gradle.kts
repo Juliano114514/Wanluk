@@ -4,10 +4,10 @@ plugins {
   alias(libs.plugins.kotlin.compose)
 }
 
-apply(from = rootProject.file("foundation/wanluk-android.gradle"))
+apply(from = rootProject.file("gradle/wanluk-android.gradle"))
 
 android {
-  namespace = "com.wanluk.lib_compose_ui"
+  namespace = "com.wanluk.libcomposeui"
 
   buildFeatures {
     compose = true

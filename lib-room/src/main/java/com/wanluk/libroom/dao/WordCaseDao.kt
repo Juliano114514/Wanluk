@@ -1,10 +1,10 @@
-package com.wanluk.lib_room.dao
+package com.wanluk.libroom.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.wanluk.lib_room.entities.WordCaseEntity
+import com.wanluk.libroom.entity.WordCaseEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

@@ -4,13 +4,13 @@ plugins {
   alias(libs.plugins.kotlin.compose)
 }
 
-apply(from = rootProject.file("foundation/wanluk-android.gradle"))
+apply(from = rootProject.file("gradle/wanluk-android.gradle"))
 
 android {
   namespace = "com.wanluk"
 
   defaultConfig {
-    applicationId = "com.wanluk"
+    applicationId = "com.wanluk.app"
     versionCode = 1
     versionName = "1.0"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -33,7 +33,7 @@ dependencies {
   implementation(project(":lib-room"))
   implementation(project(":lib-compose-ui"))
   implementation(project(":lib-record"))
-  implementation(project(":lib-exoprt"))
+  implementation(project(":lib-export"))
 
   implementation(libs.bundles.androidx.base)
   implementation(platform(libs.androidx.compose.bom))

@@ -4,10 +4,10 @@ plugins {
   alias(libs.plugins.ksp)
 }
 
-apply(from = rootProject.file("foundation/wanluk-android.gradle"))
+apply(from = rootProject.file("gradle/wanluk-android.gradle"))
 
 android {
-  namespace = "com.wanluk.lib_room"
+  namespace = "com.wanluk.libroom"
 }
 
 dependencies {

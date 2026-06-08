@@ -1,6 +1,6 @@
 package com.wanluk.ui.demo.temp.rarityfilter
 
-import com.wanluk.lib_room.entities.WordCaseEntity
+import com.wanluk.libroom.entity.WordCaseEntity
 
 /**
  * 演示用罕度筛选（临时）。

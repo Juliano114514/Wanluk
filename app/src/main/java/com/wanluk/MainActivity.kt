@@ -24,7 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.wanluk.lib_room.entities.WordCaseEntity
+import com.wanluk.libroom.entity.WordCaseEntity
 import com.wanluk.ui.demo.WordCaseDemoViewModel
 import com.wanluk.ui.demo.temp.displaymode.DisplayMode
 import com.wanluk.ui.demo.temp.displaymode.DisplayModeToggle

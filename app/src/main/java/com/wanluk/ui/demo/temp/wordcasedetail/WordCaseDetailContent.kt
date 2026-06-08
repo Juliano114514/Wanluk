@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wanluk.lib_room.entities.WordCaseEntity
+import com.wanluk.libroom.entity.WordCaseEntity
 
 /**
  * 演示用字例详情内容（临时）。与 [WordCaseDetailOverlay] 同包，发布前一并删除。

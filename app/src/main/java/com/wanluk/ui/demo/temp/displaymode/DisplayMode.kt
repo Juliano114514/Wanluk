@@ -1,6 +1,6 @@
 package com.wanluk.ui.demo.temp.displaymode
 
-import com.wanluk.lib_room.entities.WordCaseEntity
+import com.wanluk.libroom.entity.WordCaseEntity
 
 /**
  * 卡片主显示内容模式。

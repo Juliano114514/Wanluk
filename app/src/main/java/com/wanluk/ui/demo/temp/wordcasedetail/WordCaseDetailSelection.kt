@@ -1,6 +1,6 @@
 package com.wanluk.ui.demo.temp.wordcasedetail
 
-import com.wanluk.lib_room.entities.WordCaseEntity
+import com.wanluk.libroom.entity.WordCaseEntity
 import androidx.compose.ui.geometry.Rect
 
 /**

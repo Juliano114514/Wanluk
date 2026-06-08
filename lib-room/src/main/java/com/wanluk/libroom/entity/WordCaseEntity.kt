@@ -1,4 +1,4 @@
-package com.wanluk.lib_room.entities
+package com.wanluk.libroom.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

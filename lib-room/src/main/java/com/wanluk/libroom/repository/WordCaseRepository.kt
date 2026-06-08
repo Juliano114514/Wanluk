@@ -1,9 +1,9 @@
-package com.wanluk.lib_room.repository
+package com.wanluk.libroom.repository
 
 import android.content.Context
-import com.wanluk.lib_room.dao.WordCaseDao
-import com.wanluk.lib_room.entities.WordCaseEntity
-import com.wanluk.lib_room.importer.YunmuCsvImporter
+import com.wanluk.libroom.dao.WordCaseDao
+import com.wanluk.libroom.entity.WordCaseEntity
+import com.wanluk.libroom.importer.YunmuCsvImporter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -33,7 +33,7 @@ class WordCaseRepository(
   }
 
   companion object {
-    const val BUILTIN_CSV_ASSET = "韵目表.csv"
+    const val BUILTIN_CSV_ASSET = "WordCaseList.csv"
     const val BUILTIN_ROW_COUNT = 10_292
   }
 }

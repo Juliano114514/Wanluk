@@ -1,9 +1,9 @@
-package com.wanluk.lib_room.di
+package com.wanluk.libroom.di
 
 import androidx.room.Room
-import com.wanluk.lib_room.AppDatabase
-import com.wanluk.lib_room.migration.DatabaseMigrations
-import com.wanluk.lib_room.repository.WordCaseRepository
+import com.wanluk.libroom.AppDatabase
+import com.wanluk.libroom.migration.DatabaseMigrations
+import com.wanluk.libroom.repository.WordCaseRepository
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 

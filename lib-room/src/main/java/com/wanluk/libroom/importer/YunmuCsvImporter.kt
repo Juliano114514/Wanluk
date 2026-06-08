@@ -1,12 +1,12 @@
-package com.wanluk.lib_room.importer
+package com.wanluk.libroom.importer
 
-import com.wanluk.lib_room.entities.WordCaseEntity
+import com.wanluk.libroom.entity.WordCaseEntity
 import java.io.BufferedReader
 import java.io.InputStream
 import java.io.InputStreamReader
 
 /**
- * 内置 [韵目表.csv] 解析器：续行继承、等→Int 转换，映射 README §2.1.3 落库列。
+ * 内置 [WordCaseList.csv] 解析器：续行继承、等→Int 转换，映射 README §2.1.3 落库列。
  *
  * 表头（13 列）：id,聲,呼,等,韻,調,組,攝,單字,多音,组词,原註,罕度
  */
