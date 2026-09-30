@@ -1,6 +1,5 @@
 package com.wanluk.librecordui
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -8,13 +7,11 @@ import androidx.compose.foundation.gestures.awaitLongPressOrCancellation
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.*
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.style.TextAlign
@@ -73,13 +70,10 @@ fun RecordingControl(
   }
   val animatedContainer by animateColorAsState(container, label = "recordColor")
   val animatedForeground by animateColorAsState(foreground, label = "recordContent")
-  val scale by animateFloatAsState(if (recording && !stopping) 0.96f else 1f, label = "recordPress")
-  val shape = if (primary) MaterialTheme.shapes.large else MaterialTheme.shapes.medium
+  val shape = if (primary) MaterialTheme.shapes.large else MaterialTheme.shapes.small
   Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
     Surface(shape = shape, color = animatedContainer, contentColor = animatedForeground,
-      border = if (primary) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-      modifier = Modifier.size(if (primary) 72.dp else 48.dp)
-        .graphicsLayer { scaleX = scale; scaleY = scale }.clip(shape)
+      modifier = Modifier.size(if (primary) 64.dp else 48.dp).clip(shape)
         .then(input).semantics { contentDescription = label }) {
       Box(contentAlignment = Alignment.Center) { icon() }
     }
