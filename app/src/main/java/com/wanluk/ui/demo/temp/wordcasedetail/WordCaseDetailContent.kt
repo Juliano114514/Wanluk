@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,11 +18,11 @@ import com.wanluk.libroom.entity.WordCaseEntity
 @Composable
 fun WordCaseDetailContent(item: WordCaseEntity, modifier: Modifier = Modifier) {
   Column(modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-    Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.primaryContainer,
-      contentColor = MaterialTheme.colorScheme.onPrimaryContainer) {
+    Surface(color = MaterialTheme.colorScheme.surface, contentColor = MaterialTheme.colorScheme.onSurface) {
       Text(item.coreChar, fontSize = 60.sp, lineHeight = 78.sp, textAlign = TextAlign.Center,
         modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp))
     }
+    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     DetailRow("摄 · 韵", "${item.she} · ${item.yun}")
     DetailRow("声 · 呼 · 等", "${item.sheng} · ${item.hu} · ${dengLabel(item.deng)}")
     DetailRow("调 · 组", "${item.diao} · ${item.zu.orEmpty().ifEmpty { "—" }}")

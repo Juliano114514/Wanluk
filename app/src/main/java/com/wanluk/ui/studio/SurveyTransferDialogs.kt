@@ -1,5 +1,9 @@
 package com.wanluk.ui.studio
 
+import com.wanluk.libcomposeui.AppButton as Button
+import com.wanluk.libcomposeui.AppOutlinedButton as OutlinedButton
+import com.wanluk.libcomposeui.AppTextButton as TextButton
+
 import com.wanluk.libcomposeui.ActionSymbol
 
 import com.wanluk.libcomposeui.AppDialog
@@ -54,8 +58,8 @@ internal fun SurveyTransferDialogs(viewModel: SurveyTransferViewModel, state: Su
       val task = progress.task
       if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
       if (task == null) {
-        Text(if (progress.total == 0) "扫描另一台设备上的方案，或选择收到的二维码图片。" else
-          "已收到 ${progress.received} / ${progress.total} 张，请继续扫描剩余二维码。顺序不限，重复扫描不会重复计数。")
+        Text(if (progress.total == 0) "扫描或选择方案二维码图片" else
+          "已收到 ${progress.received} / ${progress.total} 张，继续扫描剩余二维码。")
         Button(onClick = {
           if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) scan()
           else permission.launch(Manifest.permission.CAMERA)
@@ -72,7 +76,7 @@ internal fun SurveyTransferDialogs(viewModel: SurveyTransferViewModel, state: Su
         Text(task.title, style = MaterialTheme.typography.titleMedium)
         Text("${task.items.size} 个题目 · ${task.totalSteps} 次录制 · 版本 ${task.revision}")
         if (task.description.isNotBlank()) Text(task.description.take(300))
-        Text("方案已收齐，确认后加入本机调查包。", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("确认后保存到本机", color = MaterialTheme.colorScheme.onSurfaceVariant)
       }
       state.message?.let { Text(it, color = MaterialTheme.colorScheme.error) }
     }
@@ -97,8 +101,8 @@ internal fun SurveyTransferDialogs(viewModel: SurveyTransferViewModel, state: Su
       Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(export.task.title, style = MaterialTheme.typography.titleMedium)
-        Text(if (export.frames.size == 1) "用另一台设备的韵录扫描，或保存图片发送。" else
-          "共 ${export.frames.size} 张，请在另一台设备的韵录中收齐整组；也可以逐张保存图片发送。")
+        Text(if (export.frames.size == 1) "用韵录扫描，或保存图片" else
+          "共 ${export.frames.size} 张，需收齐全部二维码")
         Box(Modifier.fillMaxWidth().aspectRatio(1f), contentAlignment = Alignment.Center) {
           bitmap?.let { Image(it.asImageBitmap(), "方案二维码，第 ${index + 1} 张，共 ${export.frames.size} 张",
             Modifier.fillMaxSize(), filterQuality = FilterQuality.None) }
@@ -124,6 +128,6 @@ internal fun SurveyTransferDialogs(viewModel: SurveyTransferViewModel, state: Su
       if (state.busy) Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
         CircularProgressIndicator(Modifier.size(24.dp)); Text("正在准备二维码…")
       } else Text(state.message.orEmpty())
-    }, confirmButton = { Button(onClick = { viewModel.message(null) }, enabled = !state.busy) { Text("知道了") } })
+    }, confirmButton = { Button(onClick = { viewModel.message(null) }, enabled = !state.busy) { Text("关闭") } })
   }
 }

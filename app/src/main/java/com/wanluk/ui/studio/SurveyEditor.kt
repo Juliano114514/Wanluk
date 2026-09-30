@@ -1,5 +1,8 @@
 package com.wanluk.ui.studio
 
+import com.wanluk.libcomposeui.AppButton as Button
+import com.wanluk.libcomposeui.AppTextButton as TextButton
+
 import com.wanluk.libcomposeui.ActionSymbol
 
 import com.wanluk.libcomposeui.ActionIcon
@@ -37,7 +40,7 @@ fun SurveyEditor(task: SurveyPackage, enabled: Boolean, onChange: (SurveyPackage
   var preview by remember { mutableStateOf(false) }
   var settings by remember { mutableStateOf(false) }
   var menu by remember { mutableStateOf(false) }
-  Column(Modifier.fillMaxSize().imePadding().padding(horizontal = 20.dp)) {
+  Column(Modifier.fillMaxSize().imePadding().padding(horizontal = 16.dp)) {
     OutlinedTextField(task.title, { onChange(task.copy(title = it.take(120))) }, Modifier.fillMaxWidth(),
       enabled = enabled, label = { Text("名称") }, singleLine = true)
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -59,17 +62,17 @@ fun SurveyEditor(task: SurveyPackage, enabled: Boolean, onChange: (SurveyPackage
         }
       }
     }
-    LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = 12.dp),
-      verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = 12.dp)) {
       itemsIndexed(task.items, key = { _, item -> item.itemId }) { index, item ->
         var itemMenu by remember { mutableStateOf(false) }
-        OutlinedCard(modifier = Modifier.fillMaxWidth().combinedClickable(enabled = enabled,
+        Surface(color = MaterialTheme.colorScheme.background,
+          modifier = Modifier.fillMaxWidth().combinedClickable(enabled = enabled,
           onClickLabel = "编辑题目", onClick = { editingItem = item },
           onLongClickLabel = "更多", onLongClick = { itemMenu = true })) {
-          Row(Modifier.padding(start = 20.dp, end = 8.dp, top = 12.dp, bottom = 12.dp),
+          Row(Modifier.padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             Text("${index + 1}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(item.text, Modifier.weight(1f), style = MaterialTheme.typography.titleLarge,
+            Text(item.text, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium,
               maxLines = 2, overflow = TextOverflow.Ellipsis)
             if (item.repetitions > 1) Text("×${item.repetitions}", style = MaterialTheme.typography.labelMedium)
             Box {
@@ -96,22 +99,23 @@ fun SurveyEditor(task: SurveyPackage, enabled: Boolean, onChange: (SurveyPackage
             }
           }
         }
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
       }
       if (task.items.isEmpty()) item {
-        EmptyState(ActionSymbol.LIBRARY, "先选几个字目吧", "从字库挑选，或在更多中添加词语和句子。")
+        EmptyState(ActionSymbol.LIBRARY, "暂无题目", "从字库选字，或在更多菜单中添加")
       }
     }
     Button(onClick = onSave, enabled = enabled && task.items.isNotEmpty() && task.title.isNotBlank(),
-      modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp).heightIn(min = 56.dp)) { Text("保存") }
+      modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp).heightIn(min = 48.dp)) { Text("保存") }
   }
   if (settings) AppDialog(onDismissRequest = { settings = false }, symbol = ActionSymbol.SETTINGS, title = { Text("调查包设置") }, text = {
     Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
       OutlinedTextField(task.description, { onChange(task.copy(description = it.take(4000))) },
-        enabled = enabled, label = { Text("说明") }, minLines = 2, maxLines = 5)
+        modifier = Modifier.fillMaxWidth(), enabled = enabled, label = { Text("说明") }, minLines = 2, maxLines = 5)
       OutlinedTextField(task.languageTag, { onChange(task.copy(languageTag = it.take(80))) },
-        enabled = enabled, label = { Text("语言标记") }, singleLine = true)
+        modifier = Modifier.fillMaxWidth(), enabled = enabled, label = { Text("语言标记") }, singleLine = true)
       OutlinedTextField(task.dialect, { onChange(task.copy(dialect = it.take(160))) },
-        enabled = enabled, label = { Text("方言提示") })
+        modifier = Modifier.fillMaxWidth(), enabled = enabled, label = { Text("方言提示") })
       Text("保存不影响已经开始的录制。", style = MaterialTheme.typography.bodySmall)
     }
   }, confirmButton = { Button(onClick = { settings = false }) { Text("完成") } })
@@ -135,16 +139,19 @@ private fun ItemEditor(original: SurveyItem, onDismiss: () -> Unit, onSave: (Sur
           onClick = { item = item.copy(type = type.value) }, label = { Text(type.label) }) }
       }
       OutlinedTextField(item.text, { item = item.copy(text = it.take(500), phonology = if (it == original.text) original.phonology else null) },
-        label = { Text("实际要录的字／词／句") }, minLines = 1, maxLines = 5)
-      OutlinedTextField(item.instruction, { item = item.copy(instruction = it.take(2000)) }, label = { Text("给发音人的提示") }, minLines = 2, maxLines = 5)
-      Text("明确写出录单字还是整个词语。改动采集文本时会清除原音韵标注，避免错配。", style = MaterialTheme.typography.bodySmall)
+        modifier = Modifier.fillMaxWidth(), label = { Text("录制内容") }, minLines = 1, maxLines = 5)
+      OutlinedTextField(item.instruction, { item = item.copy(instruction = it.take(2000)) },
+        modifier = Modifier.fillMaxWidth(), label = { Text("录制提示") }, minLines = 2, maxLines = 5)
+      Text("修改内容会清除原音韵标注", style = MaterialTheme.typography.bodySmall)
       Row {
         TextButton(onClick = { item = item.copy(repetitions = item.repetitions - 1) }, enabled = item.repetitions > 1) { Text("减少") }
         Text("录 ${item.repetitions} 次", modifier = Modifier.padding(top = 12.dp))
         TextButton(onClick = { item = item.copy(repetitions = item.repetitions + 1) }, enabled = item.repetitions < 5) { Text("增加") }
       }
-      Row { Checkbox(item.allowSkip, { item = item.copy(allowSkip = it) }); Text("允许跳过，原因可稍后填写", modifier = Modifier.padding(top = 12.dp)) }
-      if (item.phonology != null) Text("已附带汉语音韵标注，可在 JSON 编辑器中查看。", style = MaterialTheme.typography.bodySmall)
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        Checkbox(item.allowSkip, { item = item.copy(allowSkip = it) }); Text("允许跳过")
+      }
+      if (item.phonology != null) Text("包含音韵标注，可在 JSON 中查看", style = MaterialTheme.typography.bodySmall)
     }
   }, confirmButton = { Button(onClick = { onSave(item) }, enabled = item.text.isNotBlank()) { Text("确定") } },
     dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } })
@@ -156,9 +163,8 @@ private fun JsonEditor(task: SurveyPackage, onDismiss: () -> Unit, onApply: (Sur
   var error by remember { mutableStateOf<String?>(null) }
   var checking by remember { mutableStateOf(false) }
   val scope = rememberCoroutineScope()
-  AppDialog(onDismissRequest = { if (!checking) onDismiss() }, symbol = ActionSymbol.EDIT, title = { Text("任务 JSON · 协议 v1") }, text = {
+  AppDialog(onDismissRequest = { if (!checking) onDismiss() }, symbol = ActionSymbol.EDIT, title = { Text("编辑 JSON") }, text = {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-      Text("仅编辑任务数据。应用前会校验题型、长度、版本与重复 ID。", style = MaterialTheme.typography.bodySmall)
       OutlinedTextField(json, { if (it.length <= SurveyPackageCodec.MAX_BYTES) json = it },
         Modifier.fillMaxWidth().heightIn(min = 160.dp, max = 360.dp), enabled = !checking, minLines = 8, maxLines = 16)
       error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
@@ -182,7 +188,7 @@ private fun JsonEditor(task: SurveyPackage, onDismiss: () -> Unit, onApply: (Sur
 private fun TaskPreview(task: SurveyPackage, onDismiss: () -> Unit) {
   var position by rememberSaveable { mutableIntStateOf(0) }
   val item = task.items[position]
-  AppDialog(onDismissRequest = onDismiss, title = { Text("发音人提示预览 ${position + 1}/${task.items.size}") }, text = {
+  AppDialog(onDismissRequest = onDismiss, title = { Text("预览 ${position + 1}/${task.items.size}") }, text = {
     Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
       Text(SurveyItemType.entries.first { it.value == item.type }.label, style = MaterialTheme.typography.labelLarge)
       Text(item.text, style = MaterialTheme.typography.headlineLarge)

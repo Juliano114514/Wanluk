@@ -1,18 +1,21 @@
 package com.wanluk.ui.studio
 
+import com.wanluk.libcomposeui.AppButton as Button
+import com.wanluk.libcomposeui.AppTextButton as TextButton
+
 import com.wanluk.libcomposeui.ActionSymbol
 
 import com.wanluk.libcomposeui.ActionIcon
 
 import com.wanluk.libcomposeui.AppDialog
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -21,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -81,18 +85,18 @@ fun RecordingScreen(
   val hasWordHints = item.type == SurveyItemType.CHARACTER.value &&
     item.instruction.startsWith(hintPrefix) && item.instruction.endsWith(hintSuffix)
   val wordHints = if (hasWordHints) item.instruction.removePrefix(hintPrefix).removeSuffix(hintSuffix).trim() else ""
-  val instruction = if (hasWordHints) "请用家乡话读出这个字" else item.instruction
+  val instruction = if (hasWordHints) "用方言读出这个字" else item.instruction
 
   BoxWithConstraints(Modifier.fillMaxSize()) {
     val pageHeight = maxHeight.coerceAtLeast(if (LocalDensity.current.fontScale > 1.3f) 760.dp else 600.dp)
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).height(pageHeight)
-      .padding(horizontal = 20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+      .padding(horizontal = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
       Row(Modifier.fillMaxWidth().padding(bottom = 8.dp), verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("${step.position + 1} / ${steps.size}", style = MaterialTheme.typography.labelLarge,
           color = MaterialTheme.colorScheme.onSurfaceVariant)
         LinearProgressIndicator(progress = { (recorded + skipped).toFloat() / steps.size.coerceAtLeast(1) },
-          modifier = Modifier.weight(1f).height(8.dp).clip(RoundedCornerShape(4.dp)),
+          modifier = Modifier.weight(1f).height(3.dp),
           trackColor = MaterialTheme.colorScheme.surfaceContainerHighest)
         Box {
           MoreButton(enabled, onClick = { showMore = true })
@@ -106,18 +110,14 @@ fun RecordingScreen(
           }
         }
       }
-      OutlinedCard(Modifier.fillMaxWidth().weight(1f), shape = RoundedCornerShape(32.dp),
-        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
+      Surface(Modifier.fillMaxWidth().weight(1f), color = MaterialTheme.colorScheme.background) {
         Box(Modifier.fillMaxSize()) {
-          Column(Modifier.fillMaxSize().padding(24.dp).verticalScroll(rememberScrollState()),
+          Column(Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-            Surface(color = MaterialTheme.colorScheme.surfaceContainer, shape = MaterialTheme.shapes.small) {
-              Text(SurveyItemType.entries.first { it.value == item.type }.label +
+            Text(SurveyItemType.entries.first { it.value == item.type }.label +
                 if (item.repetitions > 1) " · 第 ${step.repetition}/${item.repetitions} 次" else "",
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                modifier = Modifier.padding(vertical = 6.dp),
                 style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
             Spacer(Modifier.height(28.dp))
             Text(item.text, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
               fontSize = when { item.text.length == 1 -> 128.sp; item.text.length <= 4 -> 72.sp
@@ -160,7 +160,7 @@ fun RecordingScreen(
           modifier = Modifier.weight(1.3f), primary = true) {
           ActionIcon(if (capture != null) ActionSymbol.STOP else ActionSymbol.MIC)
         }
-        RecordingControl(if (holdToRecord) "长按重录" else "重新录制", canStart = enabled && selected != null,
+        RecordingControl(if (holdToRecord) "长按重录" else "重录", canStart = enabled && selected != null,
           recording = false, stopping = false, holdToRecord = holdToRecord,
           onStart = onRecord, onStop = onStop, modifier = Modifier.weight(1f)) { ActionIcon(ActionSymbol.RERECORD) }
         RecordingAction(if (isLast) "结束" else "下一个", if (isLast) ActionSymbol.FINISH else ActionSymbol.NEXT,
@@ -173,23 +173,20 @@ fun RecordingScreen(
         }
       }
       TextButton(onClick = onSkip, enabled = enabled && item.allowSkip,
-        modifier = Modifier.padding(top = 4.dp)) { Text("我不会念", color = if (enabled && item.allowSkip)
+        modifier = Modifier.padding(top = 4.dp)) { Text("不会读，跳过", color = if (enabled && item.allowSkip)
           MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)) }
-      Text(when {
-        !item.allowSkip -> "此题需要录制，不确定时可在更多中备注"
-        isLast -> "最后一张了 · 结束后可在我的录制中导出"
-        else -> ""
-      }, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-        textAlign = TextAlign.Center, minLines = 2, maxLines = 2, overflow = TextOverflow.Ellipsis,
+      if (!item.allowSkip) Text("此项必须录制，可在更多菜单中备注",
+        style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
         modifier = Modifier.padding(bottom = 8.dp))
     }
   }
 
   if (showTrial) AppDialog(onDismissRequest = { showTrial = false; onStopPlayback() },
-    symbol = ActionSymbol.HEADPHONES, title = { Text("先试一试声音") }, text = {
+    symbol = ActionSymbol.HEADPHONES, title = { Text("试音") }, text = {
       Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("找个安静的位置，让手机与嘴保持稳定距离。试录一小段，再听听是否清楚。")
-        Text("试音最长 15 秒，不计入正式成果。切到后台会结束录音并尝试保存。",
+        Text("最长 15 秒，不计入正式录音。")
+        Text("切到后台会结束试音。",
           style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         trial?.let { result ->
           Text("已试录 ${seconds(result.durationMs)} 秒")
@@ -205,7 +202,7 @@ fun RecordingScreen(
   if (showNote) AppDialog(onDismissRequest = { showNote = false }, symbol = ActionSymbol.NOTE, title = { Text("本条备注") }, text = {
     Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
       OutlinedTextField(note, { onNoteChange(session.id, step.position, it) }, Modifier.fillMaxWidth(), enabled = enabled,
-        label = { Text("想补充的话") }, minLines = 2, maxLines = 5)
+        label = { Text("备注") }, minLines = 2, maxLines = 5)
       step.skipReason?.let { reason ->
         Text("跳过原因：${reason.ifBlank { "未填写" }}", style = MaterialTheme.typography.bodySmall)
         TextButton(onClick = {
@@ -215,7 +212,7 @@ fun RecordingScreen(
       }
       selected?.let { Text("WAV · ${it.sampleRate} Hz · ${it.bitsPerSample}-bit · ${it.audioSource}",
         style = MaterialTheme.typography.bodySmall) }
-      Text("切换题目时也会自动保存备注。", style = MaterialTheme.typography.bodySmall)
+      Text("切换题目时自动保存", style = MaterialTheme.typography.bodySmall)
     }
   }, confirmButton = { Button(onClick = { onNote(note); showNote = false }, enabled = enabled) { Text("保存") } },
     dismissButton = { TextButton(onClick = { showNote = false }) { Text("收起") } })
@@ -253,9 +250,9 @@ fun RecordingScreen(
   if (showExport) AppDialog(onDismissRequest = { showExport = false }, symbol = ActionSymbol.EXPORT, title = { Text("导出录制成果") }, text = {
     Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
       Text("发音人：${session.speakerAlias.ifBlank { "未填写" }}\n方言背景：${session.dialect.ifBlank { "未填写" }}\n已录 $recorded 条，跳过 $skipped 条，待录 ${steps.size - recorded - skipped} 条。")
-      Text("将包含任务快照、全部成功录音版本、录音参数、已保存备注和跳过原因。试音和中断片段不导出。")
+      Text("包含题目、录音历史、参数、备注与跳过原因，不含试音及中断片段。")
       if (note != step.note) Text("当前备注尚未保存，请先取消并保存备注。", color = MaterialTheme.colorScheme.error)
-      Text("文件仅写入你选择的位置，不会自动上传或发送。本地原始录音仍保留。")
+      Text("导出为 ZIP，本机录音保留。")
     }
   }, confirmButton = { Button(onClick = { showExport = false; onExport() }, enabled = note == step.note) { Text("选择保存位置") } },
     dismissButton = { TextButton(onClick = { showExport = false }) { Text("取消") } })
@@ -268,11 +265,10 @@ private fun RowScope.RecordingAction(
   Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
     val container = if (emphasized) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
     val foreground = if (emphasized) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-    Surface(onClick = onClick, enabled = enabled, shape = MaterialTheme.shapes.medium,
+    Surface(onClick = onClick, enabled = enabled, shape = MaterialTheme.shapes.small,
       modifier = Modifier.size(48.dp).semantics { contentDescription = label },
-      color = if (enabled) container else MaterialTheme.colorScheme.surfaceVariant,
-      contentColor = if (enabled) foreground else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-      border = if (emphasized) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
+      color = if (enabled && emphasized) container else MaterialTheme.colorScheme.background,
+      contentColor = if (enabled) foreground else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)) {
       Box(contentAlignment = Alignment.Center) { ActionIcon(symbol) }
     }
     Text(label, modifier = Modifier.padding(top = 8.dp), style = MaterialTheme.typography.labelMedium, textAlign = TextAlign.Center,
@@ -302,9 +298,8 @@ private fun RecordingFeedback(meterFlow: StateFlow<RecordingMeter>, capture: Cap
     else -> ActionSymbol.MIC
   }
   Column(Modifier.padding(top = 14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-    Surface(shape = MaterialTheme.shapes.small,
-      color = if (capture != null) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer,
-      contentColor = if (capture != null) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onPrimaryContainer) {
+    Surface(color = MaterialTheme.colorScheme.background,
+      contentColor = if (capture != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant) {
       Row(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         ActionIcon(symbol, Modifier.size(16.dp))
@@ -323,12 +318,17 @@ private fun RecordingFeedback(meterFlow: StateFlow<RecordingMeter>, capture: Cap
 internal fun SkipReasonDialog(item: SkippedItem, enabled: Boolean, onDismiss: () -> Unit, onSave: (String) -> Unit) {
   var reason by rememberSaveable(item.sessionId, item.position) { mutableStateOf(item.reason) }
   AppDialog(onDismissRequest = onDismiss, symbol = ActionSymbol.NOTE, title = { Text("跳过原因 · ${item.text}") }, text = {
-    Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.verticalScroll(rememberScrollState()).selectableGroup(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
       listOf("不认识这个字／词", "家乡没有这个说法", "不确定怎么说", "暂时不方便录制").forEach { option ->
-        FilterChip(selected = reason == option, onClick = { reason = option }, enabled = enabled, label = { Text(option) })
+        Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).selectable(reason == option, enabled = enabled,
+          role = Role.RadioButton, onClick = { reason = option }), verticalAlignment = Alignment.CenterVertically) {
+          RadioButton(reason == option, onClick = null, enabled = enabled)
+          Text(option, Modifier.padding(start = 12.dp))
+        }
       }
-      OutlinedTextField(reason, { reason = it.take(300) }, enabled = enabled, label = { Text("原因，也可自行填写") })
-      Text("若本条已经录过，旧录音仍保留在历史中。", style = MaterialTheme.typography.bodySmall)
+      OutlinedTextField(reason, { reason = it.take(300) }, modifier = Modifier.fillMaxWidth(), enabled = enabled,
+        label = { Text("跳过原因") }, maxLines = 3)
+      Text("已有录音保留在历史中", style = MaterialTheme.typography.bodySmall)
     }
   }, confirmButton = { Button(onClick = { onSave(reason) }, enabled = enabled && reason.isNotBlank()) { Text("保存原因") } },
     dismissButton = { TextButton(onClick = onDismiss) { Text("暂不填写") } })

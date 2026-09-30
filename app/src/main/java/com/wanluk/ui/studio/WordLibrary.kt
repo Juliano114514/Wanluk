@@ -1,5 +1,8 @@
 package com.wanluk.ui.studio
 
+import com.wanluk.libcomposeui.AppButton as Button
+import com.wanluk.libcomposeui.AppTextButton as TextButton
+
 import com.wanluk.libcomposeui.ActionSymbol
 
 import com.wanluk.libcomposeui.AppDialog
@@ -12,13 +15,13 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.text.style.TextOverflow
@@ -70,9 +73,9 @@ fun WordLibrary(picking: Boolean, enabled: Boolean,
         if (last >= state.words.size - 16) viewModel.loadMore()
       }
   }
-  Column(Modifier.fillMaxSize().imePadding().padding(horizontal = 20.dp)) {
+  Column(Modifier.fillMaxSize().imePadding().padding(horizontal = 16.dp)) {
     OutlinedTextField(query, { query = it.take(100) }, Modifier.fillMaxWidth().padding(top = 12.dp),
-      placeholder = { Text("搜索字目、组词") }, singleLine = true, shape = MaterialTheme.shapes.medium,
+      placeholder = { Text("搜索字目、组词") }, singleLine = true, shape = MaterialTheme.shapes.small,
       leadingIcon = { ActionIcon(ActionSymbol.SEARCH) },
       trailingIcon = if (query.isNotEmpty()) ({
         IconButton(onClick = { query = "" }) { ActionIcon(ActionSymbol.CLOSE, contentDescription = "清除搜索") }
@@ -90,14 +93,14 @@ fun WordLibrary(picking: Boolean, enabled: Boolean,
       }
     }
     if (state.filter != null && state.words.isEmpty() && !state.loading && state.error == null) Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-      EmptyState(ActionSymbol.SEARCH, if (selectedOnly && selection.isEmpty()) "点选想录的字目" else "没有匹配的字目",
-        if (selectedOnly) "回到全部字目继续选择。" else "换个关键词，或调整筛选条件。")
+      EmptyState(ActionSymbol.SEARCH, if (selectedOnly && selection.isEmpty()) "尚未选择字目" else "没有匹配的字目",
+        if (selectedOnly) "取消「已选」筛选以继续选择" else "更换关键词或调整筛选")
     } else LazyVerticalGrid(GridCells.Adaptive(100.dp), Modifier.weight(1f), state = gridState,
       contentPadding = PaddingValues(bottom = 16.dp),
-      horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+      horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
       items(state.words, key = { it.id }, contentType = { "word" }) { word ->
         val checked = word.id in selectedIds
-        Surface(shape = MaterialTheme.shapes.medium,
+        Surface(shape = RectangleShape,
           color = if (checked) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
           contentColor = if (checked) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
           border = BorderStroke(if (checked) 2.dp else 1.dp,
@@ -110,7 +113,7 @@ fun WordLibrary(picking: Boolean, enabled: Boolean,
                 if (selection.size < maxSelection) selection + word.id else selection
             })) {
           Box {
-          Column(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 18.dp), horizontalAlignment = Alignment.CenterHorizontally,
+          Column(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 14.dp), horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(word.coreChar, fontSize = 34.sp, lineHeight = 42.sp)
             Text(word.phrases.orEmpty(), maxLines = 1, overflow = TextOverflow.Ellipsis,
@@ -135,14 +138,14 @@ fun WordLibrary(picking: Boolean, enabled: Boolean,
         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
       Button(onClick = {
         if (creating) naming = true else onAdd(selection, type)
-      }, enabled = enabled && selection.isNotEmpty(), modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp).heightIn(min = 56.dp)) {
-        Text(if (creating) "选好了 · ${selection.size}" else "添加 · ${selection.size}")
+      }, enabled = enabled && selection.isNotEmpty(), modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp).heightIn(min = 48.dp)) {
+        Text(if (creating) "下一步 · ${selection.size}" else "添加 · ${selection.size}")
       }
     }
   }
   if (naming) AppDialog(onDismissRequest = { if (enabled) naming = false },
-    symbol = ActionSymbol.NOTE, title = { Text("给调查包起个名字") }, text = {
-      OutlinedTextField(name, { name = it.take(120) }, enabled = enabled, singleLine = true,
+    symbol = ActionSymbol.NOTE, title = { Text("调查包名称") }, text = {
+      OutlinedTextField(name, { name = it.take(120) }, modifier = Modifier.fillMaxWidth(), enabled = enabled, singleLine = true,
         label = { Text("名称") }, placeholder = { Text("例如：日常用字") })
     }, confirmButton = { Button(onClick = { onCreate(selection, type, name) },
       enabled = enabled && name.isNotBlank()) { Text("保存") } },

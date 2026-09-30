@@ -1,5 +1,8 @@
 package com.wanluk.ui.studio
 
+import com.wanluk.libcomposeui.AppButton as Button
+import com.wanluk.libcomposeui.AppTextButton as TextButton
+
 import com.wanluk.libcomposeui.AppDialog
 
 import android.Manifest
@@ -12,14 +15,10 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -28,13 +27,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
@@ -48,7 +44,6 @@ import com.wanluk.libcomposeui.ActionToast
 import com.wanluk.libcomposeui.ActionToastHost
 import com.wanluk.libcomposeui.rememberActionToastHostState
 import com.wanluk.libcomposeui.AppSnackbar
-import com.wanluk.libcomposeui.IconBadge
 import com.wanluk.libcomposeui.EmptyState
 import com.wanluk.libsettings.RecordingMode
 import com.wanluk.libsettingsui.RecorderSettingsScreen
@@ -128,7 +123,7 @@ fun StudioApp(viewModel: StudioViewModel, lifecycle: Lifecycle, transferViewMode
   }
   fun back() {
     when {
-      capture != null -> viewModel.notify("请先结束录音，已保存的进度会自动保留")
+      capture != null -> viewModel.notify("请先停止录音")
       state.busy != null -> Unit
       state.screen == StudioScreen.EDITOR -> if (state.draftChanged) discardDraft = true else viewModel.home()
       state.screen == StudioScreen.LIBRARY -> viewModel.leaveLibrary()
@@ -186,8 +181,8 @@ fun StudioApp(viewModel: StudioViewModel, lifecycle: Lifecycle, transferViewMode
       val enabled = state.ready && state.busy == null && capture == null
       if (!state.ready) {
         Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-          Text("正在准备本地调查工具。所有录音保存在这台设备上。")
-          if (state.busy == null) Button(onClick = viewModel::initialize) { Text("重试初始化") }
+          Text("正在初始化…")
+          if (state.busy == null) Button(onClick = viewModel::initialize) { Text("重试") }
         }
       } else when (state.screen) {
         StudioScreen.HOME -> StudioHome(packages, sessions, enabled, homeSection, { homeSection = it },
@@ -246,10 +241,10 @@ fun StudioApp(viewModel: StudioViewModel, lifecycle: Lifecycle, transferViewMode
   }
   finishedSessionId?.let { id ->
     AppDialog(onDismissRequest = { if (state.busy == null) finishedSessionId = null },
-      symbol = ActionSymbol.FINISH, title = { Text("是否导出？") }, text = { Text("录制进度已保存。现在导出录音 ZIP，或以后从「我的录制」中导出。") },
+      symbol = ActionSymbol.FINISH, title = { Text("是否导出？") }, text = { Text("进度已保存，可导出录音 ZIP。") },
       confirmButton = { Button(onClick = { finishedSessionId = null; exportRecording(id) },
         enabled = state.busy == null) { Text("立即导出") } },
-      dismissButton = { TextButton(onClick = { finishedSessionId = null }, enabled = state.busy == null) { Text("以后再说") } })
+      dismissButton = { TextButton(onClick = { finishedSessionId = null }, enabled = state.busy == null) { Text("稍后") } })
   }
   managedSession?.let { session -> RecordingSessionDialog(session, state.busy == null,
     onDismiss = { managedSession = null },
@@ -273,18 +268,18 @@ fun StudioApp(viewModel: StudioViewModel, lifecycle: Lifecycle, transferViewMode
   SurveyTransferDialogs(transferViewModel, transfer,
     onExportJson = { taskExportLauncher.launch(viewModel.prepareTaskExport(it)) })
   if (discardDraft) AppDialog(onDismissRequest = { discardDraft = false },
-    symbol = ActionSymbol.EDIT, title = { Text("离开编辑器？") }, text = { Text("尚未保存的编辑将丢失，已经保存的调查包版本不受影响。") },
-    confirmButton = { Button(onClick = { discardDraft = false; viewModel.home() }) { Text("放弃本次编辑") } },
+    symbol = ActionSymbol.EDIT, title = { Text("离开编辑器？") }, text = { Text("未保存的修改将丢失。") },
+    confirmButton = { Button(onClick = { discardDraft = false; viewModel.home() }) { Text("放弃修改") } },
     dismissButton = { TextButton(onClick = { discardDraft = false }) { Text("继续编辑") } })
   if (permissionDenied) AppDialog(onDismissRequest = { permissionDenied = false },
-    symbol = ActionSymbol.MIC, title = { Text("需要麦克风权限") }, text = { Text("仅在你开始试音或正式录制时使用麦克风。可以到系统设置中允许，之后返回继续。") },
+    symbol = ActionSymbol.MIC, title = { Text("需要麦克风权限") }, text = { Text("请在系统设置中允许使用麦克风。") },
     confirmButton = { Button(onClick = {
       permissionDenied = false
       context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}")))
     }) { Text("打开设置") } }, dismissButton = { TextButton(onClick = { permissionDenied = false }) { Text("稍后") } })
   fun clearExport() { viewModel.clearExport(); transferViewModel.clearExport() }
   (transfer.exported ?: exported)?.let { document -> AppDialog(onDismissRequest = ::clearExport,
-    symbol = ActionSymbol.FINISH, title = { Text("文件已导出") }, text = { Text("文件已写入您选择的位置，可以自行分享给对方。") },
+    symbol = ActionSymbol.FINISH, title = { Text("文件已导出") }, text = { Text("已保存到所选位置。") },
     confirmButton = { Button(onClick = {
       try {
         val intent = Intent(Intent.ACTION_SEND).apply {
@@ -296,7 +291,7 @@ fun StudioApp(viewModel: StudioViewModel, lifecycle: Lifecycle, transferViewMode
         context.startActivity(Intent.createChooser(intent, "分享导出文件"))
         clearExport()
       } catch (_: Exception) { clearExport(); viewModel.notify("无法打开分享面板；文件已导出，可从文件管理器转交") }
-    }) { Text("选择分享方式") } },
+    }) { Text("分享文件") } },
     dismissButton = { TextButton(onClick = ::clearExport) { Text("完成") } }) }
 }
 
@@ -328,13 +323,11 @@ private fun StudioHome(
     if (admin) onAdminTab(pager.currentPage) else onRecordings(pager.currentPage == 1)
   }
   Column(Modifier.fillMaxSize()) {
-    Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-      TabRow(selectedTabIndex = pager.currentPage, modifier = Modifier.weight(1f).clip(MaterialTheme.shapes.medium),
-        containerColor = MaterialTheme.colorScheme.surfaceContainer, indicator = {}, divider = {}) {
+      Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+      TabRow(selectedTabIndex = pager.currentPage, modifier = Modifier.weight(1f),
+        containerColor = MaterialTheme.colorScheme.background) {
         (if (admin) listOf("调查包", "字库") else listOf("录制方案", "我的录制")).forEachIndexed { index, label ->
           Tab(selected = pager.currentPage == index, enabled = enabled,
-            modifier = Modifier.padding(4.dp).clip(MaterialTheme.shapes.small)
-              .background(if (pager.currentPage == index) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceContainer),
             selectedContentColor = MaterialTheme.colorScheme.primary,
             unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             onClick = { scope.launch { pager.animateScrollToPage(index) } }, text = { Text(label) })
@@ -351,16 +344,16 @@ private fun StudioHome(
     HorizontalPager(state = pager, modifier = Modifier.weight(1f), userScrollEnabled = enabled,
       verticalAlignment = Alignment.Top) { page ->
       if (admin) {
-        if (page == 0) Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
+        if (page == 0) Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
           SurveyPackageList(packages, enabled, true, onStart, onEdit, onCopy, onExportQr, onExport, Modifier.weight(1f))
           Button(onClick = onNew, enabled = enabled,
-            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp).heightIn(min = 56.dp)) {
+            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp).heightIn(min = 48.dp)) {
             ActionIcon(ActionSymbol.ADD); Spacer(Modifier.width(8.dp)); Text("新建调查包")
           }
         } else libraryContent(pager.currentPage == 1)
       } else if (page == 1) RecordingList(sessions, enabled, onResume, onManageSession)
       else SurveyPackageList(packages, enabled, false, onStart, onEdit, onCopy, onExportQr, onExport,
-        Modifier.fillMaxSize().padding(horizontal = 20.dp), onDefault = onDefault)
+        Modifier.fillMaxSize().padding(horizontal = 16.dp), onDefault = onDefault)
     }
   }
 }
@@ -369,23 +362,22 @@ private fun StudioHome(
 @Composable
 private fun RecordingList(sessions: List<SurveySessionEntity>, enabled: Boolean,
   onResume: (String) -> Unit, onManage: (SurveySessionEntity) -> Unit) {
-      LazyColumn(Modifier.fillMaxSize().padding(horizontal = 20.dp), contentPadding = PaddingValues(vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)) {
+      LazyColumn(Modifier.fillMaxSize().padding(horizontal = 16.dp), contentPadding = PaddingValues(vertical = 8.dp)) {
         if (sessions.isEmpty()) item {
-          EmptyState(ActionSymbol.RECORDINGS, "第一段乡音，从这里开始", "到「录制方案」选一份方案，就可以开始记录。")
+          EmptyState(ActionSymbol.RECORDINGS, "暂无录制", "从「录制方案」开始")
         }
         items(sessions, key = { it.id }) { session ->
-          OutlinedCard(modifier = Modifier.fillMaxWidth().combinedClickable(enabled = enabled,
+          Surface(color = MaterialTheme.colorScheme.background,
+            modifier = Modifier.fillMaxWidth().combinedClickable(enabled = enabled,
             onClickLabel = "打开录制", onClick = { onResume(session.id) },
             onLongClickLabel = "管理录制", onLongClick = { onManage(session) })) {
-            Column(Modifier.padding(22.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.padding(vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
               Row(verticalAlignment = Alignment.CenterVertically) {
-                IconBadge(ActionSymbol.RECORDINGS, Modifier.padding(end = 12.dp))
-                Text(session.title, Modifier.weight(1f), style = MaterialTheme.typography.titleLarge,
+                Text(session.title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium,
                   maxLines = 2, overflow = TextOverflow.Ellipsis)
                 MoreButton(enabled, onClick = { onManage(session) })
               }
-              Text("${session.speakerAlias.ifBlank { "未填写称呼" }} · ${session.dialect.ifBlank { "未填写方言" }}", style = MaterialTheme.typography.bodySmall,
+              Text(listOf(session.speakerAlias, session.dialect).filter { it.isNotBlank() }.joinToString(" · ").ifBlank { "未填写录制者信息" }, style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
               LinearProgressIndicator(progress = { session.completedSteps.toFloat() / session.totalSteps.coerceAtLeast(1) }, modifier = Modifier.fillMaxWidth())
               Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -398,6 +390,7 @@ private fun RecordingList(sessions: List<SurveySessionEntity>, enabled: Boolean,
               }
             }
           }
+          HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         }
       }
 }
@@ -408,39 +401,36 @@ private fun SurveyPackageList(packages: List<SurveyPackage>, enabled: Boolean, a
   onStart: (SurveyPackage) -> Unit, onEdit: (SurveyPackage) -> Unit, onCopy: (SurveyPackage) -> Unit,
   onExportQr: (SurveyPackage) -> Unit, onExport: (SurveyPackage) -> Unit, modifier: Modifier = Modifier,
   onDefault: (() -> Unit)? = null) {
-  LazyColumn(modifier, contentPadding = PaddingValues(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+  LazyColumn(modifier, contentPadding = PaddingValues(vertical = 8.dp)) {
     if (!admin && onDefault != null) item(key = "default-plan") {
-      OutlinedCard(onClick = onDefault, enabled = enabled, modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))) {
-        Column(Modifier.padding(22.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-          Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            ActionIcon(ActionSymbol.LIBRARY)
-            Text("默认方案 · 完整字库", style = MaterialTheme.typography.titleLarge)
+      Surface(onClick = onDefault, enabled = enabled, modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.background) {
+        Row(Modifier.padding(vertical = 20.dp), verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+          Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text("完整字库", style = MaterialTheme.typography.titleMedium)
+            Text("默认方案", style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant)
           }
-          Text("从头到尾逐条录制，可随时暂停并继续。", style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant)
-          Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("开始录制", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
-            ActionIcon(ActionSymbol.NEXT, Modifier.size(18.dp))
-          }
+          ActionIcon(ActionSymbol.NEXT, Modifier.size(20.dp))
         }
       }
+      HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     }
     if (packages.isEmpty()) item {
-      EmptyState(ActionSymbol.LIBRARY, if (admin) "做一份自己的调查包" else "还没有调查包",
-        if (admin) "从字库选几个字，或从更多中导入方案。" else "从更多中导入，也可以先试试完整字库。")
+      EmptyState(ActionSymbol.LIBRARY, "暂无调查包", if (admin) "新建或从更多菜单导入" else "从更多菜单导入")
     }
     items(packages, key = { "${it.packageId}-${it.revision}" }) { task ->
       var taskMenu by remember { mutableStateOf(false) }
-      OutlinedCard(modifier = Modifier.fillMaxWidth().combinedClickable(enabled = enabled,
+      Surface(color = MaterialTheme.colorScheme.background,
+        modifier = Modifier.fillMaxWidth().combinedClickable(enabled = enabled,
         onClickLabel = if (admin) "编辑调查包" else "开始录制",
         onClick = { if (admin) onEdit(task) else onStart(task) },
         onLongClickLabel = if (admin) "更多" else null,
         onLongClick = if (admin) ({ taskMenu = true }) else null)) {
-        Row(Modifier.padding(22.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-          Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text(task.title, style = MaterialTheme.typography.titleLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        Row(Modifier.padding(vertical = 16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+          Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(task.title, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Text("${task.items.size} 字目", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
           }
           if (admin) Box {
@@ -453,71 +443,49 @@ private fun SurveyPackageList(packages: List<SurveyPackage>, enabled: Boolean, a
           } else ActionIcon(ActionSymbol.NEXT)
         }
       }
+      HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     }
   }
 }
 
 @Composable
 private fun StudioLanding(enabled: Boolean, onStart: () -> Unit, onAdmin: () -> Unit, onSettings: () -> Unit) {
-  BoxWithConstraints(Modifier.fillMaxSize()) {
-    val pageHeight = maxHeight.coerceAtLeast(720.dp)
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).heightIn(min = pageHeight)
-      .padding(horizontal = 24.dp, vertical = 12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-      Row(Modifier.widthIn(max = 520.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        ActionIcon(ActionSymbol.WAVE, Modifier.size(28.dp))
-        Text("韵录", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(start = 10.dp))
+  Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 8.dp),
+    horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(Modifier.widthIn(max = 520.dp).fillMaxWidth()) {
+      Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        ActionIcon(ActionSymbol.WAVE, Modifier.size(24.dp))
+        Text("韵录", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(start = 8.dp))
         Spacer(Modifier.weight(1f))
         IconButton(onClick = onSettings, enabled = enabled) {
           ActionIcon(ActionSymbol.SETTINGS, contentDescription = "设置")
         }
       }
-      Spacer(Modifier.height(40.dp))
-      Surface(shape = RoundedCornerShape(36.dp), color = MaterialTheme.colorScheme.primaryContainer,
-        contentColor = MaterialTheme.colorScheme.onPrimaryContainer) {
-        Box(Modifier.size(112.dp), contentAlignment = Alignment.Center) {
-          ActionIcon(ActionSymbol.WAVE, Modifier.size(64.dp))
+      Spacer(Modifier.height(56.dp))
+      Text("方言采集", style = MaterialTheme.typography.headlineLarge)
+      Text("录音保存在本机", Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant)
+      Spacer(Modifier.height(32.dp))
+      Button(onClick = onStart, enabled = enabled, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+        ActionIcon(ActionSymbol.MIC, Modifier.size(22.dp))
+        Spacer(Modifier.width(10.dp))
+        Text("开始录制", style = MaterialTheme.typography.titleMedium)
+      }
+      Spacer(Modifier.height(24.dp))
+      HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+      Surface(onClick = onAdmin, enabled = enabled, color = MaterialTheme.colorScheme.background) {
+        Row(Modifier.fillMaxWidth().padding(vertical = 20.dp), verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+          ActionIcon(ActionSymbol.LIBRARY, Modifier.size(22.dp))
+          Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("管理员", style = MaterialTheme.typography.titleMedium)
+            Text("调查包 · 字库 · 导入导出", style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant)
+          }
+          ActionIcon(ActionSymbol.NEXT, Modifier.size(20.dp))
         }
       }
-      Spacer(Modifier.height(28.dp))
-      Text("把家乡话，\n好好留下来。", style = MaterialTheme.typography.displaySmall, textAlign = TextAlign.Center)
-      Text("从一个字开始，慢慢记录。", color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(top = 14.dp), textAlign = TextAlign.Center)
-      Spacer(Modifier.height(40.dp))
-      LandingEntry("开始录制", "选一份方案，留下熟悉的乡音", ActionSymbol.MIC, true, enabled, onStart)
-      Spacer(Modifier.height(14.dp))
-      LandingEntry("管理员", "调查包 · 字库 · 导入导出", ActionSymbol.LIBRARY, false, enabled, onAdmin)
-      Row(Modifier.padding(top = 28.dp, bottom = 16.dp), horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalAlignment = Alignment.CenterVertically) {
-        ActionIcon(ActionSymbol.SHIELD, Modifier.size(16.dp))
-        Text("安心记录 · 录音保存在本机", style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant)
-      }
-    }
-  }
-}
-
-@Composable
-private fun LandingEntry(title: String, description: String, symbol: ActionSymbol, primary: Boolean,
-  enabled: Boolean, onClick: () -> Unit) {
-  val interaction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-  val pressed by interaction.collectIsPressedAsState()
-  val scale by androidx.compose.animation.core.animateFloatAsState(if (pressed) 0.98f else 1f, label = "entryPress")
-  Surface(onClick = onClick, enabled = enabled, interactionSource = interaction,
-    modifier = Modifier.widthIn(max = 520.dp).fillMaxWidth().graphicsLayer { scaleX = scale; scaleY = scale },
-    shape = MaterialTheme.shapes.large,
-    color = if (primary) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-    contentColor = if (primary) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-    border = if (primary) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-    shadowElevation = if (primary) 2.dp else 0.dp) {
-    Row(Modifier.padding(horizontal = 22.dp, vertical = 22.dp), verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.spacedBy(18.dp)) {
-      ActionIcon(symbol, Modifier.size(28.dp))
-      Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(title, style = MaterialTheme.typography.titleLarge)
-        Text(description, style = MaterialTheme.typography.bodySmall,
-          color = if (primary) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.86f) else MaterialTheme.colorScheme.onSurfaceVariant)
-      }
-      ActionIcon(ActionSymbol.NEXT)
+      HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     }
   }
 }
