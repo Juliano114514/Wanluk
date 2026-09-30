@@ -1,6 +1,8 @@
 package com.wanluk.libsettingsui
 
-import androidx.compose.foundation.BorderStroke
+import com.wanluk.libcomposeui.AppButton as Button
+import com.wanluk.libcomposeui.AppTextButton as TextButton
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -19,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import com.wanluk.libcomposeui.ActionIcon
 import com.wanluk.libcomposeui.ActionSymbol
 import com.wanluk.libcomposeui.AppDialog
-import com.wanluk.libcomposeui.IconBadge
 import com.wanluk.libsettings.RecorderSettings
 import com.wanluk.libsettings.RecordingMode
 import com.wanluk.libsettings.ThemeMode
@@ -33,72 +34,61 @@ fun RecorderSettingsScreen(
 ) {
   var showProfile by rememberSaveable { mutableStateOf(false) }
   var showMode by rememberSaveable { mutableStateOf(false) }
-  Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
-    verticalArrangement = Arrangement.spacedBy(20.dp)) {
-    Text("按你的习惯", style = MaterialTheme.typography.headlineMedium)
-    Text("让每次记录都自在一点。", color = MaterialTheme.colorScheme.onSurfaceVariant)
-    Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surface) {
-      Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("外观主题", style = MaterialTheme.typography.titleMedium)
-        Row(Modifier.fillMaxWidth().selectableGroup(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-          listOf(ThemeMode.LIGHT, ThemeMode.DARK, ThemeMode.SYSTEM).forEach { mode ->
-            val selected = settings.themeMode == mode
-            Surface(Modifier.weight(1f), shape = MaterialTheme.shapes.medium,
-              color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
-              contentColor = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-              border = BorderStroke(if (selected) 2.dp else 1.dp,
-                if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)) {
-              Column(Modifier.selectable(selected, enabled = enabled, role = Role.RadioButton,
-                onClick = { if (!selected) onThemeMode(mode) }).padding(horizontal = 4.dp, vertical = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                ActionIcon(when (mode) {
-                  ThemeMode.LIGHT -> ActionSymbol.SUN
-                  ThemeMode.DARK -> ActionSymbol.MOON
-                  ThemeMode.SYSTEM -> ActionSymbol.SYSTEM
-                }, Modifier.size(28.dp))
-                Text(mode.label(), style = MaterialTheme.typography.labelLarge)
-                RadioButton(selected, onClick = null, enabled = enabled, modifier = Modifier.size(24.dp))
-              }
-            }
-          }
+  var showTheme by rememberSaveable { mutableStateOf(false) }
+  Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+    SettingsSectionLabel("通用")
+    ListItem(headlineContent = { Text("外观") },
+      trailingContent = {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+          Text(settings.themeMode.label(), style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
+          ActionIcon(ActionSymbol.NEXT, Modifier.size(18.dp))
         }
-        Text(when (settings.themeMode) {
-          ThemeMode.LIGHT -> "暖白纸面，清晰明亮。"
-          ThemeMode.DARK -> "深绿底色，柔和沉静。"
-          ThemeMode.SYSTEM -> "随设备的深浅色设置自动切换。"
-        }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-      }
-    }
-    Text("录制偏好", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surface) {
+      }, modifier = Modifier.clickable(enabled = enabled) { showTheme = true }.heightIn(min = 56.dp))
+    SettingsSectionLabel("录制")
+    Surface(color = MaterialTheme.colorScheme.surface) {
       Column {
-        ListItem(headlineContent = { Text("录音方式") }, supportingContent = { Text(settings.recordingMode.label()) },
-          leadingContent = { IconBadge(ActionSymbol.MIC) },
-          trailingContent = { ActionIcon(ActionSymbol.NEXT) },
-          modifier = Modifier.clickable(enabled = enabled, onClick = { showMode = true }).padding(vertical = 8.dp))
-        HorizontalDivider(Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.outlineVariant)
+        ListItem(headlineContent = { Text("录音方式") },
+          trailingContent = {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+              Text(settings.recordingMode.label(), style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+              ActionIcon(ActionSymbol.NEXT, Modifier.size(18.dp))
+            }
+          }, modifier = Modifier.clickable(enabled = enabled, onClick = { showMode = true }).heightIn(min = 56.dp))
+        HorizontalDivider(Modifier.padding(start = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
         ListItem(headlineContent = { Text("录制者信息") }, supportingContent = {
-          Text("${settings.alias.ifBlank { "未填写称呼" }} · ${settings.dialect.ifBlank { "未填写方言" }}",
+          Text(listOf(settings.alias, settings.dialect).filter { it.isNotBlank() }.joinToString(" · ").ifBlank { "未填写" },
             maxLines = 2, overflow = TextOverflow.Ellipsis)
-        }, leadingContent = { IconBadge(ActionSymbol.PROFILE) },
-          trailingContent = { ActionIcon(ActionSymbol.NEXT) },
-          modifier = Modifier.clickable(enabled = enabled, onClick = { showProfile = true }).padding(vertical = 8.dp))
-        HorizontalDivider(Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.outlineVariant)
-        ListItem(headlineContent = { Text("不重复提问录制者信息") },
-          supportingContent = { Text("新录制使用本机已保存的信息") },
+        }, trailingContent = { ActionIcon(ActionSymbol.NEXT, Modifier.size(18.dp)) },
+          modifier = Modifier.clickable(enabled = enabled, onClick = { showProfile = true }))
+        HorizontalDivider(Modifier.padding(start = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
+        ListItem(headlineContent = { Text("使用已保存的信息") },
+          supportingContent = { Text("新录制不再询问") },
           trailingContent = { Switch(settings.doNotAskAgain, onCheckedChange = null, enabled = enabled) },
           modifier = Modifier.toggleable(settings.doNotAskAgain, enabled = enabled, role = Role.Switch) {
             onSave(settings.copy(doNotAskAgain = it), {})
-          }.padding(vertical = 8.dp))
+          })
       }
     }
-    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-      ActionIcon(ActionSymbol.SHIELD, Modifier.size(18.dp))
-      Text("设置只保存在这台设备上。修改录制者信息不会改变已有录制。",
-        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
-    Spacer(Modifier.height(8.dp))
+    Text("信息保存在本机，修改不影响已有录制。", Modifier.padding(16.dp),
+      style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
   }
+  if (showTheme) AppDialog(onDismissRequest = { if (enabled) showTheme = false },
+    title = { Text("外观") }, text = {
+      Column(Modifier.selectableGroup()) {
+        listOf(ThemeMode.LIGHT, ThemeMode.DARK, ThemeMode.SYSTEM).forEach { mode ->
+          Row(Modifier.fillMaxWidth().heightIn(min = 52.dp).selectable(settings.themeMode == mode,
+            enabled = enabled, role = Role.RadioButton, onClick = {
+              if (settings.themeMode != mode) onThemeMode(mode)
+              showTheme = false
+            }), verticalAlignment = Alignment.CenterVertically) {
+            RadioButton(settings.themeMode == mode, onClick = null, enabled = enabled)
+            Text(mode.label(), Modifier.padding(start = 12.dp), color = MaterialTheme.colorScheme.onSurface)
+          }
+        }
+      }
+    }, confirmButton = { TextButton(onClick = { showTheme = false }, enabled = enabled) { Text("取消") } })
   if (showMode) AppDialog(onDismissRequest = { if (enabled) showMode = false },
     symbol = ActionSymbol.MIC, title = { Text("录音方式") }, text = {
       Column(Modifier.selectableGroup()) {
@@ -122,7 +112,6 @@ fun RecorderSettingsScreen(
     AppDialog(onDismissRequest = { if (enabled) showProfile = false }, symbol = ActionSymbol.PROFILE,
       title = { Text("录制者信息") }, text = {
         Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-          Text("下面都可以留空，也可以随时回来修改。")
           RecorderProfileFields(alias, { alias = it }, dialect, { dialect = it }, enabled)
         }
       }, confirmButton = {
@@ -130,6 +119,12 @@ fun RecorderSettingsScreen(
           enabled = enabled) { Text("保存") }
       }, dismissButton = { TextButton(onClick = { showProfile = false }, enabled = enabled) { Text("取消") } })
   }
+}
+
+@Composable
+private fun SettingsSectionLabel(text: String) {
+  Text(text, Modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp),
+    style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
 private fun RecordingMode.label(): String = if (this == RecordingMode.HOLD) "长按录音" else "点击录音"
