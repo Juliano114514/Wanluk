@@ -10,6 +10,10 @@ android {
   namespace = "com.wanluk.libroom"
 }
 
+ksp {
+  arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 dependencies {
   implementation(project(":foundation"))
   implementation(libs.bundles.room)

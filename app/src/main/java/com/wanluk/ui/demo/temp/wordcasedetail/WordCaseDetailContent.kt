@@ -1,12 +1,10 @@
 package com.wanluk.ui.demo.temp.wordcasedetail
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -15,49 +13,32 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wanluk.libroom.entity.WordCaseEntity
 
-/**
- * 演示用字例详情内容（临时）。与 [WordCaseDetailOverlay] 同包，发布前一并删除。
- */
+/** Read-only details shared by the library and the legacy preview. */
 @Composable
-fun WordCaseDetailContent(
-  item: WordCaseEntity,
-  modifier: Modifier = Modifier,
-) {
-  Column(
-    modifier = modifier
-      .verticalScroll(rememberScrollState())
-      .padding(20.dp),
-    verticalArrangement = Arrangement.spacedBy(12.dp),
-  ) {
-    Text(
-      text = item.coreChar,
-      fontSize = 48.sp,
-      textAlign = TextAlign.Center,
-      modifier = Modifier.fillMaxWidth(),
-    )
-    DetailRow(label = "摄·韵", value = "${item.she} · ${item.yun}")
-    DetailRow(label = "声·呼·等", value = "${item.sheng} · ${item.hu} · ${dengLabel(item.deng)}")
-    DetailRow(label = "调·组", value = "${item.diao} · ${item.zu.orEmpty().ifEmpty { "—" }}")
-    DetailRow(label = "罕度", value = item.rarity.toString())
-    DetailRow(label = "组词", value = item.phrases.orEmpty().ifEmpty { "—" })
-    DetailRow(label = "原注", value = item.remark.orEmpty().ifEmpty { "—" })
-    DetailRow(label = "库内 ID", value = item.id.toString())
+fun WordCaseDetailContent(item: WordCaseEntity, modifier: Modifier = Modifier) {
+  Column(modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.primaryContainer,
+      contentColor = MaterialTheme.colorScheme.onPrimaryContainer) {
+      Text(item.coreChar, fontSize = 60.sp, lineHeight = 78.sp, textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp))
+    }
+    DetailRow("摄 · 韵", "${item.she} · ${item.yun}")
+    DetailRow("声 · 呼 · 等", "${item.sheng} · ${item.hu} · ${dengLabel(item.deng)}")
+    DetailRow("调 · 组", "${item.diao} · ${item.zu.orEmpty().ifEmpty { "—" }}")
+    DetailRow("罕度", item.rarity.toString())
+    DetailRow("组词", item.phrases.orEmpty().ifEmpty { "—" })
+    DetailRow("原注", item.remark.orEmpty().ifEmpty { "—" })
+    DetailRow("库内 ID", item.id.toString())
   }
 }
 
 @Composable
 private fun DetailRow(label: String, value: String) {
-  Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-    Text(
-      text = label,
-      style = MaterialTheme.typography.labelMedium,
-      color = MaterialTheme.colorScheme.primary,
-    )
-    Text(
-      text = value,
-      style = MaterialTheme.typography.bodyMedium,
-      color = MaterialTheme.colorScheme.onSurface,
-    )
+  Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    Text(label, Modifier.width(80.dp), style = MaterialTheme.typography.labelLarge,
+      color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Text(value, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium,
+      color = MaterialTheme.colorScheme.onSurface)
   }
 }
 

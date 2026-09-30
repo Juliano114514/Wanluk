@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Wanluk offline survey package v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "packageId",
+    "revision",
+    "title",
+    "recordingProfile",
+    "items"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "packageId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,80}$"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 120,
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 4000
+    },
+    "languageTag": {
+      "type": "string",
+      "maxLength": 80,
+      "minLength": 1,
+      "pattern": "\\S",
+      "default": "zh"
+    },
+    "dialect": {
+      "type": "string",
+      "maxLength": 160
+    },
+    "recordingProfile": {
+      "const": "wav-pcm16-48000-mono"
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 500,
+      "items": {
+        "$ref": "#/$defs/item"
+      }
+    }
+  },
+  "$defs": {
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "itemId",
+        "type",
+        "text"
+      ],
+      "properties": {
+        "itemId": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{1,80}$"
+        },
+        "type": {
+          "enum": [
+            "character",
+            "word",
+            "sentence"
+          ]
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 500,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "instruction": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "repetitions": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "default": 1
+        },
+        "allowSkip": {
+          "type": "boolean",
+          "default": true
+        },
+        "phonology": {
+          "$ref": "#/$defs/phonology"
+        }
+      }
+    },
+    "phonology": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "sheng": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "hu": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "deng": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 4
+        },
+        "yun": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "diao": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "she": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "zu": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "sourceId": {
+          "type": "string",
+          "maxLength": 120
+        }
+      }
+    }
+  },
+  "$comment": "App additionally enforces unique itemId values, a maximum of 1500 recording steps, UTF-8 and a 2 MiB file limit, disallows duplicate JSON keys and control characters except tab/newline/carriage return, and bounds JSON nesting. All package content is declarative."
+}

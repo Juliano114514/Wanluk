@@ -1,0 +1,7 @@
+<resources>
+  <!-- The camera remains dark in both themes so the code stays easy to frame. -->
+  <color name="zxing_viewfinder_laser">#ACD794</color>
+  <color name="zxing_viewfinder_mask">#99131A13</color>
+  <color name="zxing_result_view">#B3131A13</color>
+  <color name="zxing_status_text">#F2F8E7</color>
+</resources>

@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 1,
+  "packageId": "wanluk-starter-zh",
+  "revision": 1,
+  "title": "家乡话录制体验 · 30 项",
+  "description": "用于体验自录、回听、跳过和导出流程。此包未经具体方言研究设计审定，不代表完整音韵覆盖；正式调查请由研究者核对并编辑题目。",
+  "languageTag": "zh",
+  "dialect": "",
+  "recordingProfile": "wav-pcm16-48000-mono",
+  "items": [
+    {
+      "itemId": "starter-001",
+      "type": "word",
+      "text": "太阳",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-002",
+      "type": "word",
+      "text": "月亮",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-003",
+      "type": "word",
+      "text": "今天",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-004",
+      "type": "word",
+      "text": "明天",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-005",
+      "type": "word",
+      "text": "昨天",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-006",
+      "type": "word",
+      "text": "早上",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-007",
+      "type": "word",
+      "text": "晚上",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-008",
+      "type": "word",
+      "text": "吃饭",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-009",
+      "type": "word",
+      "text": "喝水",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-010",
+      "type": "word",
+      "text": "睡觉",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-011",
+      "type": "word",
+      "text": "爸爸",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-012",
+      "type": "word",
+      "text": "妈妈",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-013",
+      "type": "word",
+      "text": "哥哥",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-014",
+      "type": "word",
+      "text": "姐姐",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-015",
+      "type": "word",
+      "text": "小孩",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-016",
+      "type": "word",
+      "text": "朋友",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-017",
+      "type": "word",
+      "text": "房子",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-018",
+      "type": "word",
+      "text": "门口",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-019",
+      "type": "word",
+      "text": "窗户",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-020",
+      "type": "word",
+      "text": "下雨",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-021",
+      "type": "word",
+      "text": "刮风",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-022",
+      "type": "word",
+      "text": "冷",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-023",
+      "type": "word",
+      "text": "热",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-024",
+      "type": "word",
+      "text": "大",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-025",
+      "type": "word",
+      "text": "小",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-026",
+      "type": "word",
+      "text": "红色",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-027",
+      "type": "word",
+      "text": "白色",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-028",
+      "type": "word",
+      "text": "黑色",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-029",
+      "type": "word",
+      "text": "走路",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "starter-030",
+      "type": "word",
+      "text": "回来",
+      "instruction": "请用你平时的家乡话说出屏幕上的词语。不认识或没有这个说法时，可以说明原因后跳过。",
+      "repetitions": 1,
+      "allowSkip": true
+    }
+  ]
+}

@@ -34,6 +34,10 @@ dependencies {
   implementation(project(":lib-compose-ui"))
   implementation(project(":lib-record"))
   implementation(project(":lib-export"))
+  implementation(project(":lib-settings"))
+  implementation(project(":lib-settings-ui"))
+  implementation(project(":lib-record-ui"))
+  implementation(project(":lib-survey-transfer"))
 
   implementation(libs.bundles.androidx.base)
   implementation(platform(libs.androidx.compose.bom))

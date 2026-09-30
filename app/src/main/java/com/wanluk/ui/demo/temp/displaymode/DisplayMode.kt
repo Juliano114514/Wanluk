@@ -25,11 +25,12 @@ private fun stripParens(text: String): String =
  * 逻辑集中于此，卡片只调用此函数，切换细节与 UI 完全解耦。
  * 有括号的组词仅保留括号外的繁体部分。
  */
-fun DisplayMode.resolveMainText(item: WordCaseEntity): String =
-  when (this) {
+fun DisplayMode.resolveMainText(item: WordCaseEntity): String {
+  return when (this) {
     DisplayMode.CHAR -> item.coreChar
     DisplayMode.PHRASES -> {
       val raw = item.phrases?.takeIf { it.isNotBlank() } ?: return item.coreChar
       stripParens(raw).ifEmpty { item.coreChar }
     }
   }
+}

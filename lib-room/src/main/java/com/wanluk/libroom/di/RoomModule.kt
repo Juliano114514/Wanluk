@@ -4,6 +4,7 @@ import androidx.room.Room
 import com.wanluk.libroom.AppDatabase
 import com.wanluk.libroom.migration.DatabaseMigrations
 import com.wanluk.libroom.repository.WordCaseRepository
+import com.wanluk.libroom.repository.SurveyRepository
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
@@ -15,7 +16,7 @@ val roomModule = module {
       AppDatabase::class.java,
       "wanluk_database"
     )
-      .addMigrations(DatabaseMigrations.MIGRATION_1_2)
+      .addMigrations(DatabaseMigrations.MIGRATION_1_2, DatabaseMigrations.MIGRATION_2_3, DatabaseMigrations.MIGRATION_3_4)
       .build()
   }
 
@@ -24,4 +25,5 @@ val roomModule = module {
 
   // Repository 注入
   single { WordCaseRepository(androidContext(), get()) }
+  single { SurveyRepository(androidContext(), get()) }
 }

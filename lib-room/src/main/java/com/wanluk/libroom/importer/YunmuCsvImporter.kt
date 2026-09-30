@@ -48,6 +48,7 @@ object YunmuCsvImporter {
 
         entities.add(
           WordCaseEntity(
+            sourceId = "builtin:wordcase:${tokens[0].trim()}",
             sheng = coords.sheng,
             hu = coords.hu,
             deng = coords.deng,

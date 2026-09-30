@@ -2,9 +2,10 @@ package com.wanluk.libroom.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "word_cases")
+@Entity(tableName = "word_cases", indices = [Index(value = ["source_id"], unique = true)])
 data class WordCaseEntity(
   @PrimaryKey(autoGenerate = true)
   val id: Long = 0,
@@ -22,4 +23,5 @@ data class WordCaseEntity(
   @ColumnInfo(name = "remark") val remark: String?,
   /** 罕度 0–3，越小越常见；来自内置字表「罕度」列。 */
   @ColumnInfo(name = "rarity", defaultValue = "0") val rarity: Int = 0,
+  @ColumnInfo(name = "source_id") val sourceId: String? = null,
 )

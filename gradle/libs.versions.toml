@@ -13,6 +13,7 @@ ksp = "2.0.21-1.0.27"
 
 # AndroidX 核心与 View 体系
 coreKtx = "1.10.1"
+activity = "1.8.2"
 lifecycleRuntimeKtx = "2.6.1"
 lifecycleViewmodelKtx = "2.6.1"
 appcompat = "1.6.1"
@@ -34,6 +35,8 @@ koin = "3.5.6"
 gson = "2.14.0"
 okhttp = "4.12.0"
 logger = "2.2.0"
+zxing = "3.5.4"
+zxingEmbedded = "4.3.0"
 
 # Room 持久化
 room = "2.6.1"
@@ -60,6 +63,7 @@ androidx-cardview = { group = "androidx.cardview", name = "cardview", version.re
 
 # Jetpack Compose（BOM 与各 UI 模块）
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose" }
+androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
@@ -88,6 +92,8 @@ kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 logger = { module = "com.orhanobut:logger", version.ref = "logger" }
+zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
+zxing-embedded = { module = "com.journeyapps:zxing-android-embedded", version.ref = "zxingEmbedded" }
 
 # KSP 开发 API (写处理器需要)
 symbol-processing-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
