@@ -21,6 +21,7 @@ enum class ActionSymbol(@DrawableRes internal val drawable: Int) {
   RERECORD(R.drawable.ic_rerecord),
   LIBRARY(R.drawable.ic_library),
   MORE(R.drawable.ic_more),
+  MULTISELECT(R.drawable.ic_multiselect),
   ADD(R.drawable.ic_add),
   CLOSE(R.drawable.ic_close),
   SEARCH(R.drawable.ic_search),
