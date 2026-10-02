@@ -1,0 +1,66 @@
+syntax = "proto3";
+package wanluk.transfer.v2;
+option java_package = "com.wanluk.foundation.survey.proto";
+option java_outer_classname = "SurveyTransferProto";
+
+message Envelope {
+  uint32 version = 1;
+  bytes payload = 2;
+  bytes sha256 = 3;
+}
+
+message Plan {
+  bytes catalog_sha256 = 1;
+  string package_id = 2;
+  uint32 revision = 3;
+  string title = 4;
+  string description = 5;
+  string language_tag = 6;
+  string dialect = 7;
+  string recording_profile = 8;
+  Defaults defaults = 9;
+  // Deltas start from ID 0; custom positions do not consume a delta.
+  repeated sint32 builtin_id_deltas = 10 [packed = true];
+  repeated CustomItem custom_items = 11;
+  repeated ItemExtension extensions = 12;
+  optional string plan_type = 13;
+}
+
+message Defaults {
+  string display_type = 1;
+  optional string instruction = 2;
+  uint32 repetitions = 3;
+  bool allow_skip = 4;
+}
+
+message ExtInfo {
+  optional string display_type = 1;
+  optional string instruction = 2;
+  optional uint32 repetitions = 3;
+  optional bool allow_skip = 4;
+  string note = 5;
+}
+
+message ItemExtension {
+  uint32 position = 1;
+  ExtInfo ext_info = 2;
+}
+
+message CustomItem {
+  uint32 position = 1;
+  string id = 2;
+  string text = 3;
+  string type = 4;
+  Phonology phonology = 5;
+}
+
+message Phonology {
+  string sheng = 1;
+  string hu = 2;
+  optional uint32 deng = 3;
+  string yun = 4;
+  string diao = 5;
+  string she = 6;
+  string zu = 7;
+  string source_id = 8;
+}

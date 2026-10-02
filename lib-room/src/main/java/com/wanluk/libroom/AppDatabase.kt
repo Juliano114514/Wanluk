@@ -7,8 +7,9 @@ import com.wanluk.libroom.dao.SurveyDao
 import com.wanluk.libroom.entity.*
 
 @Database(entities = [WordCaseEntity::class, BuiltinAssetEntity::class, SurveyPackageEntity::class,
-  SurveySessionEntity::class, SurveyStepEntity::class, RecordingTakeEntity::class, SessionTaskChunkEntity::class],
-  version = 4, exportSchema = true)
+  SurveySessionEntity::class, SurveyStepEntity::class, RecordingTakeEntity::class, SessionTaskChunkEntity::class,
+  SessionItemLocation::class, RecordingCleanupJob::class, SurveyDraftEntity::class, SurveyDraftChunk::class, WordFavoriteEntity::class],
+  version = 6, exportSchema = true)
 abstract class AppDatabase : RoomDatabase() {
   abstract fun wordCaseDao(): WordCaseDao
   abstract fun surveyDao(): SurveyDao

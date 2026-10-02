@@ -16,7 +16,7 @@ val roomModule = module {
       AppDatabase::class.java,
       "wanluk_database"
     )
-      .addMigrations(DatabaseMigrations.MIGRATION_1_2, DatabaseMigrations.MIGRATION_2_3, DatabaseMigrations.MIGRATION_3_4)
+      .addMigrations(DatabaseMigrations.MIGRATION_1_2, DatabaseMigrations.MIGRATION_2_3, DatabaseMigrations.MIGRATION_3_4, DatabaseMigrations.MIGRATION_4_5, DatabaseMigrations.MIGRATION_5_6)
       .build()
   }
 
@@ -25,5 +25,5 @@ val roomModule = module {
 
   // Repository 注入
   single { WordCaseRepository(androidContext(), get()) }
-  single { SurveyRepository(androidContext(), get()) }
+  single { SurveyRepository(androidContext(), get(), get()) }
 }

@@ -37,6 +37,8 @@ okhttp = "4.12.0"
 logger = "2.2.0"
 zxing = "3.5.4"
 zxingEmbedded = "4.3.0"
+protobuf = "4.36.2"
+protobufPlugin = "0.9.6"
 
 # Room 持久化
 room = "2.6.1"
@@ -90,6 +92,7 @@ kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 
 # Gson、OkHttp、Logger
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.ref = "protobuf" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 logger = { module = "com.orhanobut:logger", version.ref = "logger" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
@@ -131,3 +134,4 @@ jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrai
 
 # KSP
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }

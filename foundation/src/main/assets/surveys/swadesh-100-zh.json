@@ -1,0 +1,954 @@
+{
+  "schemaVersion": 2,
+  "packageId": "wanluk-simple-recording",
+  "revision": 1,
+  "title": "简单录制",
+  "description": "用你的方言怎么说？",
+  "languageTag": "zh",
+  "dialect": "",
+  "recordingProfile": "wav-pcm16-48000-mono",
+  "defaults": {
+    "displayType": "word",
+    "instruction": "用你的方言怎么说？",
+    "repetitions": 1,
+    "allowSkip": true
+  },
+  "items": [
+    {
+      "itemId": "ex_swadesh_1971_001",
+      "wordId": "ex_swadesh_1971_001",
+      "type": "word",
+      "text": "我",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_002",
+      "wordId": "ex_swadesh_1971_002",
+      "type": "word",
+      "text": "你",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true,
+      "extInfo": {
+        "note": "指一个人"
+      }
+    },
+    {
+      "itemId": "ex_swadesh_1971_003",
+      "wordId": "ex_swadesh_1971_003",
+      "type": "word",
+      "text": "我们",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_004",
+      "wordId": "ex_swadesh_1971_004",
+      "type": "word",
+      "text": "这个",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_005",
+      "wordId": "ex_swadesh_1971_005",
+      "type": "word",
+      "text": "那个",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_006",
+      "wordId": "ex_swadesh_1971_006",
+      "type": "word",
+      "text": "谁",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_007",
+      "wordId": "ex_swadesh_1971_007",
+      "type": "word",
+      "text": "什么",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_008",
+      "wordId": "ex_swadesh_1971_008",
+      "type": "word",
+      "text": "不",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_009",
+      "wordId": "ex_swadesh_1971_009",
+      "type": "word",
+      "text": "全部",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_010",
+      "wordId": "ex_swadesh_1971_010",
+      "type": "word",
+      "text": "很多",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_011",
+      "wordId": "ex_swadesh_1971_011",
+      "type": "word",
+      "text": "一",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_012",
+      "wordId": "ex_swadesh_1971_012",
+      "type": "word",
+      "text": "二",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_013",
+      "wordId": "ex_swadesh_1971_013",
+      "type": "word",
+      "text": "大",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_014",
+      "wordId": "ex_swadesh_1971_014",
+      "type": "word",
+      "text": "长",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_015",
+      "wordId": "ex_swadesh_1971_015",
+      "type": "word",
+      "text": "小",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_016",
+      "wordId": "ex_swadesh_1971_016",
+      "type": "word",
+      "text": "女人",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_017",
+      "wordId": "ex_swadesh_1971_017",
+      "type": "word",
+      "text": "男人",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_018",
+      "wordId": "ex_swadesh_1971_018",
+      "type": "word",
+      "text": "人",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_019",
+      "wordId": "ex_swadesh_1971_019",
+      "type": "word",
+      "text": "鱼",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_020",
+      "wordId": "ex_swadesh_1971_020",
+      "type": "word",
+      "text": "鸟",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_021",
+      "wordId": "ex_swadesh_1971_021",
+      "type": "word",
+      "text": "狗",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_022",
+      "wordId": "ex_swadesh_1971_022",
+      "type": "word",
+      "text": "虱子",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_023",
+      "wordId": "ex_swadesh_1971_023",
+      "type": "word",
+      "text": "树",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_024",
+      "wordId": "ex_swadesh_1971_024",
+      "type": "word",
+      "text": "种子",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_025",
+      "wordId": "ex_swadesh_1971_025",
+      "type": "word",
+      "text": "叶子",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_026",
+      "wordId": "ex_swadesh_1971_026",
+      "type": "word",
+      "text": "根",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true,
+      "extInfo": {
+        "note": "植物的根"
+      }
+    },
+    {
+      "itemId": "ex_swadesh_1971_027",
+      "wordId": "ex_swadesh_1971_027",
+      "type": "word",
+      "text": "树皮",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_028",
+      "wordId": "ex_swadesh_1971_028",
+      "type": "word",
+      "text": "皮肤",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_029",
+      "wordId": "ex_swadesh_1971_029",
+      "type": "word",
+      "text": "肉",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true,
+      "extInfo": {
+        "note": "身体上的肉"
+      }
+    },
+    {
+      "itemId": "ex_swadesh_1971_030",
+      "wordId": "ex_swadesh_1971_030",
+      "type": "word",
+      "text": "血",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_031",
+      "wordId": "ex_swadesh_1971_031",
+      "type": "word",
+      "text": "骨头",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_032",
+      "wordId": "ex_swadesh_1971_032",
+      "type": "word",
+      "text": "油脂",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true,
+      "extInfo": {
+        "note": "动物油脂"
+      }
+    },
+    {
+      "itemId": "ex_swadesh_1971_033",
+      "wordId": "ex_swadesh_1971_033",
+      "type": "word",
+      "text": "蛋",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_034",
+      "wordId": "ex_swadesh_1971_034",
+      "type": "word",
+      "text": "角",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true,
+      "extInfo": {
+        "note": "动物头上的角"
+      }
+    },
+    {
+      "itemId": "ex_swadesh_1971_035",
+      "wordId": "ex_swadesh_1971_035",
+      "type": "word",
+      "text": "尾巴",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_036",
+      "wordId": "ex_swadesh_1971_036",
+      "type": "word",
+      "text": "羽毛",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_037",
+      "wordId": "ex_swadesh_1971_037",
+      "type": "word",
+      "text": "头发",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true,
+      "extInfo": {
+        "note": "头上的头发"
+      }
+    },
+    {
+      "itemId": "ex_swadesh_1971_038",
+      "wordId": "ex_swadesh_1971_038",
+      "type": "word",
+      "text": "头",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_039",
+      "wordId": "ex_swadesh_1971_039",
+      "type": "word",
+      "text": "耳朵",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_040",
+      "wordId": "ex_swadesh_1971_040",
+      "type": "word",
+      "text": "眼睛",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_041",
+      "wordId": "ex_swadesh_1971_041",
+      "type": "word",
+      "text": "鼻子",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_042",
+      "wordId": "ex_swadesh_1971_042",
+      "type": "word",
+      "text": "嘴",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_043",
+      "wordId": "ex_swadesh_1971_043",
+      "type": "word",
+      "text": "牙齿",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_044",
+      "wordId": "ex_swadesh_1971_044",
+      "type": "word",
+      "text": "舌头",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_045",
+      "wordId": "ex_swadesh_1971_045",
+      "type": "word",
+      "text": "爪子",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true,
+      "extInfo": {
+        "note": "动物的爪子"
+      }
+    },
+    {
+      "itemId": "ex_swadesh_1971_046",
+      "wordId": "ex_swadesh_1971_046",
+      "type": "word",
+      "text": "脚",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_047",
+      "wordId": "ex_swadesh_1971_047",
+      "type": "word",
+      "text": "膝盖",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_048",
+      "wordId": "ex_swadesh_1971_048",
+      "type": "word",
+      "text": "手",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_049",
+      "wordId": "ex_swadesh_1971_049",
+      "type": "word",
+      "text": "肚子",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_050",
+      "wordId": "ex_swadesh_1971_050",
+      "type": "word",
+      "text": "脖子",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_051",
+      "wordId": "ex_swadesh_1971_051",
+      "type": "word",
+      "text": "乳房",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_052",
+      "wordId": "ex_swadesh_1971_052",
+      "type": "word",
+      "text": "心脏",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_053",
+      "wordId": "ex_swadesh_1971_053",
+      "type": "word",
+      "text": "肝脏",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_054",
+      "wordId": "ex_swadesh_1971_054",
+      "type": "word",
+      "text": "喝",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_055",
+      "wordId": "ex_swadesh_1971_055",
+      "type": "word",
+      "text": "吃",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_056",
+      "wordId": "ex_swadesh_1971_056",
+      "type": "word",
+      "text": "咬",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_057",
+      "wordId": "ex_swadesh_1971_057",
+      "type": "word",
+      "text": "看见",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_058",
+      "wordId": "ex_swadesh_1971_058",
+      "type": "word",
+      "text": "听见",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_059",
+      "wordId": "ex_swadesh_1971_059",
+      "type": "word",
+      "text": "知道",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_060",
+      "wordId": "ex_swadesh_1971_060",
+      "type": "word",
+      "text": "睡觉",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_061",
+      "wordId": "ex_swadesh_1971_061",
+      "type": "word",
+      "text": "死",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_062",
+      "wordId": "ex_swadesh_1971_062",
+      "type": "word",
+      "text": "杀",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_063",
+      "wordId": "ex_swadesh_1971_063",
+      "type": "word",
+      "text": "游泳",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_064",
+      "wordId": "ex_swadesh_1971_064",
+      "type": "word",
+      "text": "飞",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_065",
+      "wordId": "ex_swadesh_1971_065",
+      "type": "word",
+      "text": "走路",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_066",
+      "wordId": "ex_swadesh_1971_066",
+      "type": "word",
+      "text": "来",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_067",
+      "wordId": "ex_swadesh_1971_067",
+      "type": "word",
+      "text": "躺",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true,
+      "extInfo": {
+        "note": "躺着休息"
+      }
+    },
+    {
+      "itemId": "ex_swadesh_1971_068",
+      "wordId": "ex_swadesh_1971_068",
+      "type": "word",
+      "text": "坐",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_069",
+      "wordId": "ex_swadesh_1971_069",
+      "type": "word",
+      "text": "站",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_070",
+      "wordId": "ex_swadesh_1971_070",
+      "type": "word",
+      "text": "给",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_071",
+      "wordId": "ex_swadesh_1971_071",
+      "type": "word",
+      "text": "说",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_072",
+      "wordId": "ex_swadesh_1971_072",
+      "type": "word",
+      "text": "太阳",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_073",
+      "wordId": "ex_swadesh_1971_073",
+      "type": "word",
+      "text": "月亮",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_074",
+      "wordId": "ex_swadesh_1971_074",
+      "type": "word",
+      "text": "星星",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_075",
+      "wordId": "ex_swadesh_1971_075",
+      "type": "word",
+      "text": "水",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_076",
+      "wordId": "ex_swadesh_1971_076",
+      "type": "word",
+      "text": "雨",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_077",
+      "wordId": "ex_swadesh_1971_077",
+      "type": "word",
+      "text": "石头",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_078",
+      "wordId": "ex_swadesh_1971_078",
+      "type": "word",
+      "text": "沙",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_079",
+      "wordId": "ex_swadesh_1971_079",
+      "type": "word",
+      "text": "土",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true,
+      "extInfo": {
+        "note": "泥土"
+      }
+    },
+    {
+      "itemId": "ex_swadesh_1971_080",
+      "wordId": "ex_swadesh_1971_080",
+      "type": "word",
+      "text": "云",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_081",
+      "wordId": "ex_swadesh_1971_081",
+      "type": "word",
+      "text": "烟",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true,
+      "extInfo": {
+        "note": "燃烧产生的烟"
+      }
+    },
+    {
+      "itemId": "ex_swadesh_1971_082",
+      "wordId": "ex_swadesh_1971_082",
+      "type": "word",
+      "text": "火",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_083",
+      "wordId": "ex_swadesh_1971_083",
+      "type": "word",
+      "text": "灰",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true,
+      "extInfo": {
+        "note": "燃烧后留下的灰"
+      }
+    },
+    {
+      "itemId": "ex_swadesh_1971_084",
+      "wordId": "ex_swadesh_1971_084",
+      "type": "word",
+      "text": "燃烧",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_085",
+      "wordId": "ex_swadesh_1971_085",
+      "type": "word",
+      "text": "路",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true,
+      "extInfo": {
+        "note": "行走的小路"
+      }
+    },
+    {
+      "itemId": "ex_swadesh_1971_086",
+      "wordId": "ex_swadesh_1971_086",
+      "type": "word",
+      "text": "山",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_087",
+      "wordId": "ex_swadesh_1971_087",
+      "type": "word",
+      "text": "红色",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_088",
+      "wordId": "ex_swadesh_1971_088",
+      "type": "word",
+      "text": "绿色",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_089",
+      "wordId": "ex_swadesh_1971_089",
+      "type": "word",
+      "text": "黄色",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_090",
+      "wordId": "ex_swadesh_1971_090",
+      "type": "word",
+      "text": "白色",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_091",
+      "wordId": "ex_swadesh_1971_091",
+      "type": "word",
+      "text": "黑色",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_092",
+      "wordId": "ex_swadesh_1971_092",
+      "type": "word",
+      "text": "夜晚",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_093",
+      "wordId": "ex_swadesh_1971_093",
+      "type": "word",
+      "text": "热",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_094",
+      "wordId": "ex_swadesh_1971_094",
+      "type": "word",
+      "text": "冷",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_095",
+      "wordId": "ex_swadesh_1971_095",
+      "type": "word",
+      "text": "满",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_096",
+      "wordId": "ex_swadesh_1971_096",
+      "type": "word",
+      "text": "新",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_097",
+      "wordId": "ex_swadesh_1971_097",
+      "type": "word",
+      "text": "好",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_098",
+      "wordId": "ex_swadesh_1971_098",
+      "type": "word",
+      "text": "圆",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_099",
+      "wordId": "ex_swadesh_1971_099",
+      "type": "word",
+      "text": "干",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    },
+    {
+      "itemId": "ex_swadesh_1971_100",
+      "wordId": "ex_swadesh_1971_100",
+      "type": "word",
+      "text": "名字",
+      "instruction": "用你的方言怎么说？",
+      "repetitions": 1,
+      "allowSkip": true
+    }
+  ]
+}

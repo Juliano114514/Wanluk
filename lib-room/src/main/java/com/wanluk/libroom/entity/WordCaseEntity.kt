@@ -24,4 +24,5 @@ data class WordCaseEntity(
   /** 罕度 0–3，越小越常见；来自内置字表「罕度」列。 */
   @ColumnInfo(name = "rarity", defaultValue = "0") val rarity: Int = 0,
   @ColumnInfo(name = "source_id") val sourceId: String? = null,
+  val polyphonic: Boolean? = null,
 )

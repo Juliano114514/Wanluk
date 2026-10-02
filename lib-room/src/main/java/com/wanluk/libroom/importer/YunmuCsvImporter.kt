@@ -20,6 +20,7 @@ object YunmuCsvImporter {
   private const val COL_ZU = 6
   private const val COL_SHE = 7
   private const val COL_CORE_CHAR = 8
+  private const val COL_POLYPHONIC = 9
   private const val COL_PHRASES = 10
   private const val COL_REMARK = 11
   private const val COL_RARITY = 12
@@ -60,6 +61,7 @@ object YunmuCsvImporter {
             phrases = tokens.getOrNull(COL_PHRASES)?.trim()?.takeIf { it.isNotEmpty() },
             remark = tokens.getOrNull(COL_REMARK)?.trim()?.takeIf { it.isNotEmpty() },
             rarity = parseRarity(tokens.getOrNull(COL_RARITY)),
+            polyphonic = when (tokens.getOrNull(COL_POLYPHONIC)?.trim()) { "1" -> true; "0" -> false; else -> null },
           )
         )
       }
