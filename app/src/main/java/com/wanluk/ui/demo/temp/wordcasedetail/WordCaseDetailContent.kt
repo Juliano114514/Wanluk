@@ -13,10 +13,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wanluk.libroom.entity.WordCaseEntity
+import com.wanluk.foundation.survey.WordEntry
 
 /** Read-only details shared by the library and the legacy preview. */
 @Composable
 fun WordCaseDetailContent(item: WordCaseEntity, modifier: Modifier = Modifier) {
+  WordCaseDetailContent(WordEntry(item.id, item.sheng, item.hu, item.deng, item.yun, item.diao, item.zu,
+    item.she, item.coreChar, item.phrases, item.remark, item.rarity, item.sourceId, item.polyphonic), modifier)
+}
+
+@Composable
+fun WordCaseDetailContent(item: WordEntry, modifier: Modifier = Modifier) {
   Column(modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
     Surface(color = MaterialTheme.colorScheme.surface, contentColor = MaterialTheme.colorScheme.onSurface) {
       Text(item.coreChar, fontSize = 60.sp, lineHeight = 78.sp, textAlign = TextAlign.Center,
@@ -27,9 +34,10 @@ fun WordCaseDetailContent(item: WordCaseEntity, modifier: Modifier = Modifier) {
     DetailRow("声 · 呼 · 等", "${item.sheng} · ${item.hu} · ${dengLabel(item.deng)}")
     DetailRow("调 · 组", "${item.diao} · ${item.zu.orEmpty().ifEmpty { "—" }}")
     DetailRow("罕度", item.rarity.toString())
+    DetailRow("多音", when (item.polyphonic) { true -> "是"; false -> "否"; null -> "未标注" })
     DetailRow("组词", item.phrases.orEmpty().ifEmpty { "—" })
     DetailRow("原注", item.remark.orEmpty().ifEmpty { "—" })
-    DetailRow("库内 ID", item.id.toString())
+    DetailRow("内置 ID", item.sourceId?.takeIf { it.startsWith("builtin:wordcase:") }?.removePrefix("builtin:wordcase:") ?: "—")
   }
 }
 

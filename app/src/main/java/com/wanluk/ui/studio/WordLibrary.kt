@@ -28,10 +28,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wanluk.foundation.survey.SurveyItemType
-import com.wanluk.libroom.entity.WordCaseEntity
+import com.wanluk.foundation.survey.SurveyPackage
+import com.wanluk.foundation.survey.RecordingPlanType
+import com.wanluk.foundation.survey.WordEntry
 import com.wanluk.libroom.repository.WordFilter
 import com.wanluk.ui.demo.temp.wordcasedetail.WordCaseDetailContent
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.activity.compose.BackHandler
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.koin.androidx.compose.koinViewModel
@@ -40,25 +43,43 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun WordLibrary(picking: Boolean, enabled: Boolean,
   onAdd: (List<Long>, SurveyItemType) -> Unit,
-  creating: Boolean = false, maxSelection: Int = 500,
-  onCreate: (List<Long>, SurveyItemType, String) -> Unit,
+  creating: Boolean = false, maxSelection: Int = SurveyPackage.MAX_ITEMS,
+  onCreate: (List<Long>, SurveyItemType, String, RecordingPlanType) -> Unit,
   active: Boolean = true,
+  multiSelecting: Boolean = false, onMultiSelecting: (Boolean) -> Unit = {},
+  onExport: (List<Long>, SurveyItemType) -> Unit = { _, _ -> },
   viewModel: WordLibraryViewModel = koinViewModel(key = if (picking) "word-picker" else "word-browser")) {
   var query by rememberSaveable { mutableStateOf("") }
   var she by rememberSaveable { mutableStateOf("") }
   var rarity by rememberSaveable { mutableIntStateOf(-1) }
+  var sheng by rememberSaveable { mutableStateOf("") }
+  var yun by rememberSaveable { mutableStateOf("") }
+  var diao by rememberSaveable { mutableStateOf("") }
+  var hu by rememberSaveable { mutableStateOf("") }
+  var deng by rememberSaveable { mutableIntStateOf(-1) }
+  var polyphonic by rememberSaveable { mutableIntStateOf(-1) }
+  var favoritesOnly by rememberSaveable { mutableStateOf(false) }
   var selection by rememberSaveable { mutableStateOf(emptyList<Long>()) }
   var type by rememberSaveable { mutableStateOf(SurveyItemType.CHARACTER) }
+  var planType by rememberSaveable { mutableStateOf(RecordingPlanType.CHARACTER) }
   var selectedOnly by rememberSaveable { mutableStateOf(false) }
   var filters by rememberSaveable { mutableStateOf(false) }
   var naming by rememberSaveable { mutableStateOf(false) }
   var name by rememberSaveable { mutableStateOf("") }
-  var details by remember { mutableStateOf<WordCaseEntity?>(null) }
+  var details by remember { mutableStateOf<WordEntry?>(null) }
   val state by viewModel.state.collectAsStateWithLifecycle()
   val gridState = rememberLazyGridState()
   val selectedIds = remember(selection) { selection.toSet() }
-  val filter = remember(query, she, rarity, selectedOnly, selection) {
-    WordFilter(query.trim(), she, rarity, selectedOnly, if (selectedOnly) selection else emptyList())
+  val selecting = picking || multiSelecting
+  val canSelect by rememberUpdatedState(selecting && active)
+  SelectionBackEffect(multiSelecting && active, enabled) { selection = emptyList(); selectedOnly = false; onMultiSelecting(false) }
+  BackHandler(multiSelecting && active && enabled) { selection = emptyList(); selectedOnly = false; onMultiSelecting(false) }
+  LaunchedEffect(active) {
+    if (!active && !picking) { selection = emptyList(); selectedOnly = false; onMultiSelecting(false) }
+  }
+  LaunchedEffect(multiSelecting) { if (!multiSelecting && !picking) { selection = emptyList(); selectedOnly = false } }
+  val filter = remember(query, she, rarity, selectedOnly, selection, sheng, yun, diao, hu, deng, polyphonic, favoritesOnly) {
+    WordFilter(query.trim(), she, rarity, selectedOnly, if (selectedOnly) selection else emptyList(), sheng, yun, diao, deng, hu, polyphonic, favoritesOnly)
   }
   LaunchedEffect(filter, active) {
     if (active && state.filter != filter) {
@@ -81,7 +102,7 @@ fun WordLibrary(picking: Boolean, enabled: Boolean,
         IconButton(onClick = { query = "" }) { ActionIcon(ActionSymbol.CLOSE, contentDescription = "清除搜索") }
       }) else null)
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-      if (picking) FilterChip(selectedOnly, { selectedOnly = !selectedOnly },
+      if (selecting) FilterChip(selectedOnly, { selectedOnly = !selectedOnly },
         label = { Text("已选 ${selection.size}") })
       else Text(if (state.filter == null || state.loading && state.words.isEmpty()) "载入中…" else "${state.total} 字目",
         style = MaterialTheme.typography.labelLarge)
@@ -89,7 +110,7 @@ fun WordLibrary(picking: Boolean, enabled: Boolean,
       TextButton(onClick = { filters = true }, enabled = enabled) {
         ActionIcon(ActionSymbol.FILTER, Modifier.size(18.dp))
         Spacer(Modifier.width(6.dp))
-        Text(if (she.isNotEmpty() || rarity != -1 || type != SurveyItemType.CHARACTER) "筛选 · 已设置" else "筛选")
+        Text(if (filter != WordFilter() || type != SurveyItemType.CHARACTER) "筛选 · 已设置" else "筛选")
       }
     }
     if (state.filter != null && state.words.isEmpty() && !state.loading && state.error == null) Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -105,10 +126,10 @@ fun WordLibrary(picking: Boolean, enabled: Boolean,
           contentColor = if (checked) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
           border = BorderStroke(if (checked) 2.dp else 1.dp,
             if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant),
-          modifier = Modifier.semantics { selected = checked }.combinedClickable(enabled = enabled,
-            onClickLabel = if (picking) "选择字目" else "字目详情", onLongClickLabel = "字目详情",
+          modifier = Modifier.semantics { selected = checked }.combinedClickable(enabled = enabled && !state.selecting,
+            onClickLabel = if (selecting) "选择字目" else "字目详情", onLongClickLabel = "字目详情",
             onLongClick = { details = word }, onClick = {
-              if (!picking) details = word
+              if (!selecting) details = word
               else selection = if (checked) selection - word.id else
                 if (selection.size < maxSelection) selection + word.id else selection
             })) {
@@ -118,10 +139,10 @@ fun WordLibrary(picking: Boolean, enabled: Boolean,
             Text(word.coreChar, fontSize = 34.sp, lineHeight = 42.sp)
             Text(word.phrases.orEmpty(), maxLines = 1, overflow = TextOverflow.Ellipsis,
               style = MaterialTheme.typography.bodySmall)
-            Text("${word.sheng} · ${word.yun} · ${word.diao}", maxLines = 1, overflow = TextOverflow.Ellipsis,
+            Text("${word.sheng} · ${word.yun} · ${word.diao}${if (word.favorite) " · 收藏" else ""}", maxLines = 1, overflow = TextOverflow.Ellipsis,
               style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
           }
-          if (picking && checked) ActionIcon(ActionSymbol.FINISH,
+          if (selecting && checked) ActionIcon(ActionSymbol.FINISH,
             Modifier.align(Alignment.TopEnd).padding(6.dp).size(16.dp))
           }
         }
@@ -133,26 +154,44 @@ fun WordLibrary(picking: Boolean, enabled: Boolean,
         TextButton(onClick = viewModel::retry, enabled = !state.loading, modifier = Modifier.fillMaxWidth()) { Text("$error · 重试") }
       } }
     }
-    if (picking) {
+    if (selecting) {
+      Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        TextButton(onClick = { viewModel.selectAll(selection, maxSelection) { if (canSelect) selection = it } },
+          enabled = enabled && !state.selecting && state.filter != null) {
+          Text(if (state.selecting) "正在选择…" else "全选当前筛选")
+        }
+        TextButton(onClick = { selection = emptyList() }, enabled = enabled && !state.selecting && selection.isNotEmpty()) { Text("清空选择") }
+        if (!picking) TextButton(onClick = { onMultiSelecting(false) }, enabled = enabled && !state.selecting) { Text("退出") }
+      }
       if (selection.size >= maxSelection) Text("最多可选 $maxSelection 个字目",
         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-      Button(onClick = {
-        if (creating) naming = true else onAdd(selection, type)
-      }, enabled = enabled && selection.isNotEmpty(), modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp).heightIn(min = 48.dp)) {
-        Text(if (creating) "下一步 · ${selection.size}" else "添加 · ${selection.size}")
+      if (picking) Button(onClick = {
+          if (creating) naming = true else onAdd(selection, type)
+        }, enabled = enabled && !state.selecting && selection.isNotEmpty(), modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp).heightIn(min = 48.dp)) {
+          Text(if (creating) "下一步 · ${selection.size}" else "添加 · ${selection.size}")
+        }
+      else SelectionActions {
+        TextButton(onClick = { naming = true }, enabled = enabled && !state.selecting && selection.isNotEmpty()) { Text("新建调查包") }
+        TextButton(onClick = { onExport(selection, type) }, enabled = enabled && !state.selecting && selection.isNotEmpty()) { Text("导出方案") }
       }
     }
   }
   if (naming) AppDialog(onDismissRequest = { if (enabled) naming = false },
     symbol = ActionSymbol.NOTE, title = { Text("调查包名称") }, text = {
-      OutlinedTextField(name, { name = it.take(120) }, modifier = Modifier.fillMaxWidth(), enabled = enabled, singleLine = true,
-        label = { Text("名称") }, placeholder = { Text("例如：日常用字") })
-    }, confirmButton = { Button(onClick = { onCreate(selection, type, name) },
+      Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        OutlinedTextField(name, { name = it.take(120) }, modifier = Modifier.fillMaxWidth(), enabled = enabled, singleLine = true,
+          label = { Text("名称") }, placeholder = { Text("例如：日常用字") })
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+          RecordingPlanType.entries.forEach { value -> FilterChip(planType == value, { planType = value },
+            enabled = enabled, label = { Text(value.label) }) }
+        }
+      }
+    }, confirmButton = { Button(onClick = { onCreate(selection, type, name, planType); naming = false },
       enabled = enabled && name.isNotBlank()) { Text("保存") } },
     dismissButton = { TextButton(onClick = { naming = false }, enabled = enabled) { Text("继续选字") } })
   if (filters) AppDialog(onDismissRequest = { filters = false }, symbol = ActionSymbol.FILTER, title = { Text("筛选") }, text = {
     Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-      if (picking) {
+      if (selecting) {
         Text("录制内容", style = MaterialTheme.typography.labelLarge)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
           listOf(SurveyItemType.CHARACTER, SurveyItemType.WORD).forEach { value ->
@@ -166,6 +205,29 @@ fun WordLibrary(picking: Boolean, enabled: Boolean,
           FilterChip(she == group, { she = group }, label = { Text(group.ifEmpty { "全部" }) })
         }
       }
+      listOf("sheng" to "声母", "yun" to "韵", "diao" to "声调", "hu" to "呼").forEach { (field, label) ->
+        Text(label, style = MaterialTheme.typography.labelLarge)
+        val current = when (field) { "sheng" -> sheng; "yun" -> yun; "diao" -> diao; else -> hu }
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+          (listOf("") + state.facets.filter { it.field == field }.map { it.value }).forEach { value ->
+            FilterChip(current == value, {
+              when (field) { "sheng" -> sheng = value; "yun" -> yun = value; "diao" -> diao = value; else -> hu = value }
+            }, label = { Text(value.ifEmpty { "全部" }) })
+          }
+        }
+      }
+      Text("等", style = MaterialTheme.typography.labelLarge)
+      FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        listOf(-1, 1, 2, 3, 4).forEach { value -> FilterChip(deng == value, { deng = value },
+          label = { Text(if (value == -1) "全部" else listOf("", "一", "二", "三", "四")[value]) }) }
+      }
+      Text("多音", style = MaterialTheme.typography.labelLarge)
+      FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        listOf(-1 to "全部", 1 to "多音", 0 to "非多音").forEach { (value, label) ->
+          FilterChip(polyphonic == value, { polyphonic = value }, label = { Text(label) })
+        }
+      }
+      FilterChip(favoritesOnly, { favoritesOnly = !favoritesOnly }, label = { Text("只看收藏") })
       Text("罕度", style = MaterialTheme.typography.labelLarge)
       FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         (-1..3).forEach { value -> FilterChip(rarity == value, { rarity = value },
@@ -173,7 +235,8 @@ fun WordLibrary(picking: Boolean, enabled: Boolean,
       }
     }
   }, confirmButton = { Button(onClick = { filters = false }) { Text("完成") } },
-    dismissButton = { TextButton(onClick = { she = ""; rarity = -1; type = SurveyItemType.CHARACTER }) { Text("重置") } })
+    dismissButton = { TextButton(onClick = { she = ""; rarity = -1; sheng = ""; yun = ""; diao = ""; hu = ""; deng = -1; polyphonic = -1; favoritesOnly = false; type = SurveyItemType.CHARACTER }) { Text("重置") } })
   details?.let { word -> AppDialog(onDismissRequest = { details = null }, symbol = ActionSymbol.LIBRARY, title = { Text("字目详情") },
-    text = { WordCaseDetailContent(word) }, confirmButton = { Button(onClick = { details = null }) { Text("完成") } }) }
+    text = { WordCaseDetailContent(word) }, confirmButton = { Button(onClick = { details = null }) { Text("完成") } },
+    dismissButton = { TextButton(onClick = { viewModel.favorite(word, !word.favorite) { details = it } }, enabled = enabled) { Text(if (word.favorite) "取消收藏" else "收藏") } }) }
 }
