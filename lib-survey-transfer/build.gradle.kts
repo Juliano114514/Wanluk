@@ -9,7 +9,7 @@ android { namespace = "com.wanluk.libsurveytransfer" }
 
 dependencies {
   implementation(project(":foundation"))
-  implementation(libs.gson)
+  implementation(libs.bundles.coroutines)
   api(libs.androidx.activity)
   implementation(libs.zxing.core)
   implementation(libs.zxing.embedded)

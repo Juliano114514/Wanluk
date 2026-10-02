@@ -12,7 +12,7 @@ class SurveyQrScanContract : ActivityResultContract<Unit, String?>() {
 
   override fun createIntent(context: Context, input: Unit): Intent = delegate.createIntent(context,
     ScanOptions().setDesiredBarcodeFormats(ScanOptions.QR_CODE)
-      .setPrompt("对准韵录方案二维码；多张方案请逐张扫描")
+      .setPrompt("对准韵录方案二维码")
       .setBeepEnabled(false).setBarcodeImageEnabled(false).setOrientationLocked(false))
 
   override fun parseResult(resultCode: Int, intent: Intent?): String? = delegate.parseResult(resultCode, intent).contents

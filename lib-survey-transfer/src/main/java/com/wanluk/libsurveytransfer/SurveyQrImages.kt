@@ -18,7 +18,7 @@ import java.io.ByteArrayOutputStream
 
 object SurveyQrImages {
   fun render(text: String): Bitmap {
-    SurveyQrCodec.parse(text)
+    SurveyQrCodec.check(text)
     val matrix = QRCodeWriter().encode(text, BarcodeFormat.QR_CODE, 800, 800,
       mapOf(EncodeHintType.ERROR_CORRECTION to ErrorCorrectionLevel.M, EncodeHintType.MARGIN to 4))
     val pixels = IntArray(matrix.width * matrix.height) { index ->
@@ -38,7 +38,11 @@ object SurveyQrImages {
         bytes.write(buffer, 0, count)
       }
     }
-    val data = bytes.toByteArray()
+    return readBytes(bytes.toByteArray())
+  }
+
+  fun readBytes(data: ByteArray): String {
+    require(data.size <= 12 * 1024 * 1024) { "请选择小于 12 MB 的二维码图片" }
     val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     BitmapFactory.decodeByteArray(data, 0, data.size, options)
     require(options.outWidth in 1..20000 && options.outHeight in 1..20000) { "无法识别图片尺寸" }
