@@ -12,10 +12,23 @@ class RecordingFiles(context: Context) {
     require(UUID.fromString(sessionId).toString() == sessionId) { "录制会话 ID 无效" }
     require(UUID.fromString(takeId).toString() == takeId) { "录音 ID 无效" }
     val directory = File(root, sessionId)
+    check(directory.canonicalFile == directory.absoluteFile && directory.parentFile == root) { "录音路径越界" }
     check(directory.isDirectory || directory.mkdirs()) { "无法创建录音目录" }
     val file = File(directory, "$takeId.wav").canonicalFile
-    require(file.path.startsWith(root.path + File.separator)) { "录音路径越界" }
+    require(directory.canonicalFile == directory.absoluteFile && file == File(directory, "$takeId.wav").absoluteFile && file.parentFile == directory) { "录音路径越界" }
     return file
+  }
+
+  /** Remove only the named take and its unfinished fragment within the session directory. */
+  fun deleteTake(sessionId: String, takeId: String) {
+    require(UUID.fromString(sessionId).toString() == sessionId && UUID.fromString(takeId).toString() == takeId) { "录音 ID 无效" }
+    val directory = File(root, sessionId)
+    check(directory.canonicalFile == directory.absoluteFile && directory.parentFile == root) { "录音路径越界" }
+    listOf("$takeId.wav", "$takeId.wav.part").forEach { name ->
+      val file = File(directory, name)
+      check(file.canonicalFile == file.absoluteFile && file.parentFile == directory) { "录音路径越界" }
+      check(!file.exists() || file.isFile && file.delete()) { "部分音频未能清理，请重试" }
+    }
   }
 
   /** Only remove a session's flat private directory; never traverse links or nested directories. */

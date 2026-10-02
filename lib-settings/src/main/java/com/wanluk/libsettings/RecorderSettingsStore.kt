@@ -20,7 +20,7 @@ data class RecorderSettings(
   val recordingMode: RecordingMode = RecordingMode.HOLD,
   val themeMode: ThemeMode = ThemeMode.SYSTEM,
 ) {
-  val shouldAsk: Boolean get() = !hasSavedProfile || !doNotAskAgain || (alias.isBlank() && dialect.isBlank())
+  val shouldAsk: Boolean get() = !hasSavedProfile || !doNotAskAgain
 }
 
 /** Device-local preferences; a recording session keeps its own immutable profile snapshot. */

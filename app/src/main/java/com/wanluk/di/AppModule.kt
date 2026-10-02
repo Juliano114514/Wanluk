@@ -1,6 +1,8 @@
 package com.wanluk.di
 
 import com.wanluk.ui.demo.WordCaseDemoViewModel
+import com.wanluk.ui.studio.RecordingProgressViewModel
+import com.wanluk.ui.studio.SurveyCsvViewModel
 import com.wanluk.ui.studio.StudioViewModel
 import com.wanluk.ui.studio.WordLibraryViewModel
 import com.wanluk.ui.studio.SurveyTransferViewModel
@@ -16,11 +18,13 @@ import org.koin.dsl.module
 val appModule = module {
   viewModel { WordCaseDemoViewModel(get()) }
   viewModel { WordLibraryViewModel(get()) }
+  viewModel { RecordingProgressViewModel(get()) }
+  viewModel { SurveyCsvViewModel(androidContext(), get()) }
   single { RecordingFiles(androidContext()) }
   factory { WavRecorder(androidContext()) }
   factory { RecordingPlayer() }
   factory { ResultExporter(get()) }
   single { RecorderSettingsStore(androidContext()) }
-  viewModel { SurveyTransferViewModel(androidContext(), get()) }
+  viewModel { SurveyTransferViewModel(androidContext(), get(), get()) }
   viewModel { StudioViewModel(androidContext(), get(), get(), get(), get(), get(), get(), get()) }
 }

@@ -15,6 +15,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
+import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
@@ -36,6 +37,7 @@ data class WavResult(
   val rms: Double,
   val clippedFraction: Double,
   val warning: String,
+  val appliedGain: Double = 1.0,
 )
 
 /** Foreground, single-owner recorder. Final files appear only after header and data are flushed. */
@@ -51,9 +53,10 @@ class WavRecorder(private val context: Context) {
       if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
         throw SecurityException("请先允许麦克风权限")
       }
-      require(maxSeconds in 1..120)
+      require(maxSeconds in 1..600)
       check(!file.exists()) { "录音文件已存在，不能覆盖" }
-      check(requireNotNull(file.parentFile).usableSpace >= 32L * 1024 * 1024) { "可用空间不足 32 MB，请先导出并整理文件" }
+      val requiredSpace = maxOf(32L * 1024 * 1024, SAMPLE_RATE.toLong() * 2 * maxSeconds + 44 + 8L * 1024 * 1024)
+      check(requireNotNull(file.parentFile).usableSpace >= requiredSpace) { "可用空间不足，需至少 ${(requiredSpace + 1024 * 1024 - 1) / (1024 * 1024)} MB，请先导出并整理文件" }
       val minimum = AudioRecord.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
       check(minimum > 0) { "此设备不支持 48 kHz 单声道 PCM 录制" }
       val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -74,6 +77,8 @@ class WavRecorder(private val context: Context) {
       var peak = 0
       var squaredSum = 0.0
       var clipped = 0L
+      var inputPeak = 0
+      var appliedGain = 1.0
       var routedDevice = "unknown"
       var routeChanged = false
       val shorts = ShortArray(2048)
@@ -119,6 +124,33 @@ class WavRecorder(private val context: Context) {
         }
         check(samples > 0) { "没有录到声音数据，请重试" }
         capture.stop()
+        inputPeak = peak
+        // One gain for the whole take preserves relative amplitudes and leaves peak headroom.
+        appliedGain = if (peak == 0) 1.0 else (TARGET_PEAK.toDouble() / peak).coerceIn(1.0, MAX_GAIN)
+        if (appliedGain > 1.0) {
+          peak = 0
+          squaredSum = 0.0
+          var processed = 0L
+          while (processed < samples) {
+            currentCoroutineContext().ensureActive()
+            val count = minOf(shorts.size.toLong(), samples - processed).toInt()
+            val offset = 44 + processed * 2
+            output.seek(offset)
+            output.readFully(bytes, 0, count * 2)
+            for (index in 0 until count) {
+              val sample = ((bytes[index * 2].toInt() and 255) or
+                ((bytes[index * 2 + 1].toInt() and 255) shl 8)).toShort().toInt()
+              val amplified = (sample * appliedGain).roundToInt()
+              peak = maxOf(peak, abs(amplified))
+              squaredSum += amplified.toDouble() * amplified
+              bytes[index * 2] = (amplified and 255).toByte()
+              bytes[index * 2 + 1] = ((amplified shr 8) and 255).toByte()
+            }
+            output.seek(offset)
+            output.write(bytes, 0, count * 2)
+            processed += count
+          }
+        }
         output.seek(0)
         output.write(header(samples * 2))
         output.fd.sync()
@@ -128,13 +160,13 @@ class WavRecorder(private val context: Context) {
       val rms = sqrt(squaredSum / samples) / 32768.0
       val warnings = buildList {
         if (duration < 500) add("录音短于 0.5 秒，请回听确认")
-        if (peak / 32768.0 < 0.01) add("声音很小或没有明显声音，建议检查麦克风后重录")
+        if (inputPeak / 32768.0 < 0.01) add("采集声音很小或没有明显声音，建议检查麦克风后重录")
         if (clipped.toDouble() / samples > 0.001) add("检测到可能的削波，建议稍远离麦克风后重录")
         if (routeChanged) add("录制中输入设备发生变化，请回听确认")
         if (samples >= limit) add("达到单条 ${maxSeconds} 秒上限，已自动保存")
       }.joinToString("；")
       WavResult(file, duration, capture.sampleRate, sourceName, routedDevice, peak / 32768.0,
-        rms, clipped.toDouble() / samples, warnings)
+        rms, clipped.toDouble() / samples, warnings, appliedGain)
     } finally {
       try {
         recorder?.let {
@@ -155,5 +187,9 @@ class WavRecorder(private val context: Context) {
     put("data".toByteArray(Charsets.US_ASCII)); putInt(dataBytes.toInt())
   }.array()
 
-  companion object { const val SAMPLE_RATE = 48000 }
+  companion object {
+    const val SAMPLE_RATE = 48000
+    private const val TARGET_PEAK = 29000
+    private const val MAX_GAIN = 4.0
+  }
 }

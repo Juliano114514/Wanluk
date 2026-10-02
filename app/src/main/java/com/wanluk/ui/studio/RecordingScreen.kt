@@ -10,8 +10,6 @@ import com.wanluk.libcomposeui.ActionIcon
 import com.wanluk.libcomposeui.AppDialog
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.selection.selectable
@@ -33,46 +31,42 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.StateFlow
-import com.wanluk.foundation.survey.SurveyPackage
+import com.wanluk.foundation.survey.*
 import com.wanluk.foundation.survey.SurveyItemType
 import com.wanluk.librecord.RecordingMeter
 import com.wanluk.librecord.WavResult
 import com.wanluk.librecordui.RecordingControl
-import com.wanluk.libroom.entity.RecordingTakeEntity
-import com.wanluk.libroom.entity.SurveySessionDetail
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun RecordingScreen(
-  detail: SurveySessionDetail, task: SurveyPackage, enabled: Boolean, capture: CaptureState?, meter: StateFlow<RecordingMeter>,
+  detail: CurrentRecording, enabled: Boolean, capture: CaptureState?, meter: StateFlow<RecordingMeter>,
   trial: WavResult?, playing: Boolean,
   onRecord: (held: Boolean) -> Unit, onTrial: () -> Unit, onStop: () -> Unit, onPlay: (String?) -> Unit,
   onPlayTrial: () -> Unit, onStopPlayback: () -> Unit,
   onPosition: (Int) -> Unit, onSkip: () -> Unit, onNote: (String) -> Unit,
   onSkipReason: (SkippedItem, String) -> Unit,
   noteDraft: StepNoteDraft?, onNoteChange: (String, Int, String) -> Unit,
-  onAdopt: (String) -> Unit, onExport: () -> Unit, onFinish: () -> Unit,
+  onAdopt: (String) -> Unit, onReview: (String, ReviewStatus) -> Unit, onExport: () -> Unit, onFinish: () -> Unit,
   holdToRecord: Boolean,
   busy: String? = null, toastHost: @Composable () -> Unit = {},
+  onExportSteps: (List<Int>) -> Unit, onExportTakes: (List<String>) -> Unit,
+  onClearSteps: (List<Int>) -> Unit, onDeleteTakes: (List<String>) -> Unit,
 ) {
   val session = detail.session
-  val itemsById = remember(task) { task.items.associateBy { it.itemId } }
-  val steps = remember(detail.steps) { detail.steps.sortedBy { it.position } }
-  val step = steps.firstOrNull { it.position == session.currentPosition } ?: return
-  val isLast = step.position == steps.lastIndex
-  val item = itemsById.getValue(step.itemId)
-  val takes = remember(detail.takes, step.position) {
-    detail.takes.filter { it.position == step.position }.sortedByDescending { it.createdAt }
-  }
+  val step = detail.step
+  val item = detail.item
+  val passage = detail.planType == RecordingPlanType.PASSAGE
+  val isLast = step.position == session.totalSteps - 1
+  val takes = detail.takes
   val selected = takes.firstOrNull { it.id == step.selectedTakeId }
-  val recorded = remember(steps) { steps.count { it.selectedTakeId != null } }
-  val skipped = remember(steps) { steps.count { it.skipReason != null } }
-  var showProgress by remember { mutableStateOf(false) }
+  val recorded = session.recordedSteps
+  val skipped = session.skippedSteps
+  var showProgress by rememberSaveable { mutableStateOf(false) }
   var skipReasonItem by remember { mutableStateOf<SkippedItem?>(null) }
   var showExport by remember { mutableStateOf(false) }
-  var showHistory by remember { mutableStateOf(false) }
+  var showHistory by rememberSaveable { mutableStateOf(false) }
   val note = noteDraft?.takeIf { it.sessionId == session.id && it.position == step.position }?.text ?: step.note
 
   var showMore by remember { mutableStateOf(false) }
@@ -88,14 +82,16 @@ fun RecordingScreen(
   val instruction = if (hasWordHints) "用方言读出这个字" else item.instruction
 
   BoxWithConstraints(Modifier.fillMaxSize()) {
+    val controlColumns = if (maxWidth < 360.dp || LocalDensity.current.fontScale > 1.3f) 3 else 5
     val pageHeight = maxHeight.coerceAtLeast(if (LocalDensity.current.fontScale > 1.3f) 760.dp else 600.dp)
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).height(pageHeight)
+    Column(Modifier.fillMaxSize().then(if (passage) Modifier else Modifier.verticalScroll(rememberScrollState()))
+      .height(if (passage) maxHeight else pageHeight)
       .padding(horizontal = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
       Row(Modifier.fillMaxWidth().padding(bottom = 8.dp), verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("${step.position + 1} / ${steps.size}", style = MaterialTheme.typography.labelLarge,
+        Text("${step.position + 1} / ${session.totalSteps}", style = MaterialTheme.typography.labelLarge,
           color = MaterialTheme.colorScheme.onSurfaceVariant)
-        LinearProgressIndicator(progress = { (recorded + skipped).toFloat() / steps.size.coerceAtLeast(1) },
+        LinearProgressIndicator(progress = { (recorded + skipped).toFloat() / session.totalSteps.coerceAtLeast(1) },
           modifier = Modifier.weight(1f).height(3.dp),
           trackColor = MaterialTheme.colorScheme.surfaceContainerHighest)
         Box {
@@ -113,17 +109,17 @@ fun RecordingScreen(
       Surface(Modifier.fillMaxWidth().weight(1f), color = MaterialTheme.colorScheme.background) {
         Box(Modifier.fillMaxSize()) {
           Column(Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-            Text(SurveyItemType.entries.first { it.value == item.type }.label +
+            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = if (passage) Arrangement.Top else Arrangement.Center) {
+            Text((if (passage) "文段 · 每条最多10分钟" else SurveyItemType.entries.first { it.value == item.type }.label) +
                 if (item.repetitions > 1) " · 第 ${step.repetition}/${item.repetitions} 次" else "",
                 modifier = Modifier.padding(vertical = 6.dp),
                 style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(Modifier.height(28.dp))
-            Text(item.text, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
-              fontSize = when { item.text.length == 1 -> 128.sp; item.text.length <= 4 -> 72.sp
+            Spacer(Modifier.height(if (passage) 12.dp else 28.dp))
+            Text(item.text, modifier = Modifier.fillMaxWidth(), textAlign = if (passage) TextAlign.Start else TextAlign.Center,
+              fontSize = when { passage -> 24.sp; item.text.length == 1 -> 128.sp; item.text.length <= 4 -> 72.sp
                 item.text.length <= 8 -> 48.sp; else -> 30.sp },
-              fontWeight = FontWeight.Medium, lineHeight = when {
-                item.text.length == 1 -> 150.sp; item.text.length <= 4 -> 88.sp
+              fontWeight = if (passage) FontWeight.Normal else FontWeight.Medium, lineHeight = when {
+                passage -> 36.sp; item.text.length == 1 -> 150.sp; item.text.length <= 4 -> 88.sp
                 item.text.length <= 8 -> 64.sp; else -> 44.sp })
             if (wordHints.isNotBlank()) {
               Spacer(Modifier.height(28.dp))
@@ -135,6 +131,11 @@ fun RecordingScreen(
               Text(instruction, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+            item.extInfo?.note?.takeIf { it.isNotBlank() }?.let {
+              Spacer(Modifier.height(12.dp))
+              Text(it, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
             if (selected?.warning?.isNotBlank() == true) {
               Spacer(Modifier.height(12.dp))
               Text(selected.warning, color = MaterialTheme.colorScheme.error,
@@ -144,9 +145,9 @@ fun RecordingScreen(
           toastHost()
         }
       }
-      RecordingFeedback(meter, capture, busy, playing, selected, step.skipReason != null, holdToRecord)
-      Row(Modifier.fillMaxWidth().padding(top = 12.dp), horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically) {
+      RecordingFeedback(meter, capture, busy, playing, selected, step.skipReason != null, holdToRecord, detail.planType.maxSeconds)
+      FlowRow(Modifier.fillMaxWidth().padding(top = 12.dp), horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalArrangement = Arrangement.spacedBy(12.dp), maxItemsInEachRow = controlColumns) {
         RecordingAction("上一个", ActionSymbol.PREVIOUS, enabled && step.position > 0) { onPosition(step.position - 1) }
         RecordingAction(if (playing) "停止播放" else "播放", if (playing) ActionSymbol.STOP else ActionSymbol.PLAY,
           enabled && (selected != null || playing)) { if (playing) onStopPlayback() else onPlay(null) }
@@ -157,12 +158,12 @@ fun RecordingScreen(
           else -> "录制"
         }, canStart = enabled && selected == null, recording = capture != null, stopping = capture?.stopping == true,
           holdToRecord = holdToRecord && capture?.trial != true, onStart = onRecord, onStop = onStop,
-          modifier = Modifier.weight(1.3f), primary = true) {
+          modifier = Modifier.weight(1.3f).align(Alignment.CenterVertically), primary = true) {
           ActionIcon(if (capture != null) ActionSymbol.STOP else ActionSymbol.MIC)
         }
         RecordingControl(if (holdToRecord) "长按重录" else "重录", canStart = enabled && selected != null,
           recording = false, stopping = false, holdToRecord = holdToRecord,
-          onStart = onRecord, onStop = onStop, modifier = Modifier.weight(1f)) { ActionIcon(ActionSymbol.RERECORD) }
+          onStart = onRecord, onStop = onStop, modifier = Modifier.weight(1f).align(Alignment.CenterVertically)) { ActionIcon(ActionSymbol.RERECORD) }
         RecordingAction(if (isLast) "结束" else "下一个", if (isLast) ActionSymbol.FINISH else ActionSymbol.NEXT,
           enabled && (selected != null || item.allowSkip), emphasized = isLast || selected != null) {
           when {
@@ -220,36 +221,14 @@ fun RecordingScreen(
     onSkipReason(skipped, reason)
     skipReasonItem = null
   } }
-  if (showProgress) AppDialog(onDismissRequest = { showProgress = false }, symbol = ActionSymbol.RECORDINGS, title = { Text("录制进度") }, text = {
-    LazyColumn(Modifier.heightIn(max = 420.dp)) {
-      items(steps, key = { it.position }) { entry ->
-        val text = itemsById.getValue(entry.itemId).text
-        TextButton(onClick = { onPosition(entry.position); showProgress = false }, modifier = Modifier.fillMaxWidth()) {
-          Text("${entry.position + 1}. $text · 第${entry.repetition}次 · ${when {
-            entry.selectedTakeId != null -> "已录"; entry.skipReason != null -> "已跳过"; else -> "待录"
-          }}", modifier = Modifier.fillMaxWidth())
-        }
-      }
-    }
-  }, confirmButton = { Button(onClick = { showProgress = false }) { Text("关闭") } })
-  if (showHistory) AppDialog(onDismissRequest = { showHistory = false }, symbol = ActionSymbol.HISTORY, title = { Text("本条录音历史") }, text = {
-    LazyColumn(Modifier.heightIn(max = 400.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-      items(takes, key = { it.id }) { take ->
-        Column {
-          Text("${timeLabel(take.createdAt)} · ${if (take.state == RecordingTakeEntity.SAVED) "${seconds(take.durationMs)} 秒" else "录制中断"}")
-          if (take.id == step.selectedTakeId) Text("当前采用", color = MaterialTheme.colorScheme.primary)
-          if (take.warning.isNotBlank()) Text(take.warning, style = MaterialTheme.typography.bodySmall)
-          if (take.state == RecordingTakeEntity.SAVED) Row {
-            TextButton(onClick = { onPlay(take.id) }) { Text("回听") }
-            TextButton(onClick = { onAdopt(take.id); showHistory = false }, enabled = take.id != step.selectedTakeId) { Text("采用此版") }
-          }
-        }
-      }
-    }
-  }, confirmButton = { Button(onClick = { showHistory = false; onStopPlayback() }) { Text("关闭") } })
+  if (showProgress) RecordingProgressDialog(session, enabled,
+    onDismiss = { showProgress = false }, onPosition = onPosition, onExport = onExportSteps, onClear = onClearSteps)
+  if (showHistory) RecordingHistoryDialog(takes, step.selectedTakeId, enabled,
+    onDismiss = { showHistory = false; onStopPlayback() }, onPlay = { onPlay(it) }, onAdopt = onAdopt,
+    onExport = onExportTakes, onDelete = onDeleteTakes, onReview = onReview)
   if (showExport) AppDialog(onDismissRequest = { showExport = false }, symbol = ActionSymbol.EXPORT, title = { Text("导出录制成果") }, text = {
     Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-      Text("发音人：${session.speakerAlias.ifBlank { "未填写" }}\n方言背景：${session.dialect.ifBlank { "未填写" }}\n已录 $recorded 条，跳过 $skipped 条，待录 ${steps.size - recorded - skipped} 条。")
+      Text("发音人：${session.speakerAlias.ifBlank { "未填写" }}\n方言背景：${session.dialect.ifBlank { "未填写" }}\n已录 $recorded 条，跳过 $skipped 条，待录 ${session.totalSteps - recorded - skipped} 条。")
       Text("包含题目、录音历史、参数、备注与跳过原因，不含试音及中断片段。")
       if (note != step.note) Text("当前备注尚未保存，请先取消并保存备注。", color = MaterialTheme.colorScheme.error)
       Text("导出为 ZIP，本机录音保留。")
@@ -262,7 +241,7 @@ fun RecordingScreen(
 private fun RowScope.RecordingAction(
   label: String, symbol: ActionSymbol, enabled: Boolean, emphasized: Boolean = false, onClick: () -> Unit,
 ) {
-  Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+  Column(Modifier.weight(1f).align(Alignment.CenterVertically), horizontalAlignment = Alignment.CenterHorizontally) {
     val container = if (emphasized) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
     val foreground = if (emphasized) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
     Surface(onClick = onClick, enabled = enabled, shape = MaterialTheme.shapes.small,
@@ -279,11 +258,11 @@ private fun RowScope.RecordingAction(
 /** Only this small region observes the high-frequency microphone meter. */
 @Composable
 private fun RecordingFeedback(meterFlow: StateFlow<RecordingMeter>, capture: CaptureState?, busy: String?,
-  playing: Boolean, selected: RecordingTakeEntity?, skipped: Boolean, holdToRecord: Boolean) {
+  playing: Boolean, selected: RecordingTake?, skipped: Boolean, holdToRecord: Boolean, maxSeconds: Int) {
   val meter by meterFlow.collectAsStateWithLifecycle()
   val status = when {
     capture?.stopping == true -> "正在保存…"
-    capture != null -> "${if (capture.trial) "试音中" else "录制中"} · ${seconds(meter.durationMs)} 秒"
+    capture != null -> "${if (capture.trial) "试音中" else "录制中"} · ${seconds(meter.durationMs)}秒 / ${if (capture.trial) "15秒" else "${maxSeconds / 60}分钟"}"
     busy != null -> busy
     playing -> "正在播放"
     selected != null -> "已保存 · ${seconds(selected.durationMs)} 秒"
@@ -335,4 +314,3 @@ internal fun SkipReasonDialog(item: SkippedItem, enabled: Boolean, onDismiss: ()
 }
 
 private fun seconds(ms: Long): String = String.format(Locale.ROOT, "%.1f", ms / 1000.0)
-private fun timeLabel(ms: Long): String = SimpleDateFormat("MM-dd HH:mm:ss", Locale.getDefault()).format(Date(ms))

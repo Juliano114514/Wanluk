@@ -37,7 +37,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.wanluk.foundation.survey.SurveyPackage
-import com.wanluk.libroom.entity.SurveySessionEntity
+import com.wanluk.foundation.survey.SurveyPackageSummary
+import com.wanluk.foundation.survey.SessionSummary
+import com.wanluk.foundation.survey.DraftSummary
 import com.wanluk.libcomposeui.ActionIcon
 import com.wanluk.libcomposeui.ActionSymbol
 import com.wanluk.libcomposeui.ActionToast
@@ -48,24 +50,29 @@ import com.wanluk.libcomposeui.EmptyState
 import com.wanluk.libsettings.RecordingMode
 import com.wanluk.libsettingsui.RecorderSettingsScreen
 import com.wanluk.foundation.survey.RecordingTaskSnapshot
+import com.wanluk.foundation.survey.BuiltinSurveys
+import com.wanluk.foundation.survey.RecordingPlanType
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StudioApp(viewModel: StudioViewModel, lifecycle: Lifecycle, transferViewModel: SurveyTransferViewModel = koinViewModel()) {
+fun StudioApp(viewModel: StudioViewModel, lifecycle: Lifecycle, transferViewModel: SurveyTransferViewModel = koinViewModel(), csvViewModel: SurveyCsvViewModel = koinViewModel()) {
   val state by viewModel.state.collectAsStateWithLifecycle()
   val packages by viewModel.packages.collectAsStateWithLifecycle()
   val sessions by viewModel.sessions.collectAsStateWithLifecycle()
+  val drafts by viewModel.drafts.collectAsStateWithLifecycle()
+  val csv by csvViewModel.state.collectAsStateWithLifecycle()
   val detail by viewModel.detail.collectAsStateWithLifecycle()
   val selectedSessionId by viewModel.selectedSessionId.collectAsStateWithLifecycle()
-  val recordingTask by viewModel.recordingTask.collectAsStateWithLifecycle()
   val skippedItem by viewModel.skippedItem.collectAsStateWithLifecycle()
   val noteDraft by viewModel.noteDraft.collectAsStateWithLifecycle()
   val capture by viewModel.capture.collectAsStateWithLifecycle()
   val trial by viewModel.trial.collectAsStateWithLifecycle()
   val playing by viewModel.playing.collectAsStateWithLifecycle()
   val exported by viewModel.lastExport.collectAsStateWithLifecycle()
+  val batchResult by viewModel.batchResult.collectAsStateWithLifecycle()
+  val cleanupCount by viewModel.cleanupCount.collectAsStateWithLifecycle()
   val recorderSettings by viewModel.recorderSettings.collectAsStateWithLifecycle()
   val transfer by transferViewModel.state.collectAsStateWithLifecycle()
   val context = LocalContext.current
@@ -73,9 +80,11 @@ fun StudioApp(viewModel: StudioViewModel, lifecycle: Lifecycle, transferViewMode
   val snackbar = remember { SnackbarHostState() }
   val toast = rememberActionToastHostState()
   val scope = rememberCoroutineScope()
+  val selectionBack = remember { SelectionBackState() }
   var startTask by remember { mutableStateOf<SurveyPackage?>(null) }
   var startDefault by rememberSaveable { mutableStateOf(false) }
   var skipReasonItem by remember { mutableStateOf<SkippedItem?>(null) }
+  var showDrafts by remember { mutableStateOf(false) }
   var discardDraft by remember { mutableStateOf(false) }
   var permissionDenied by remember { mutableStateOf(false) }
   var pendingTrial by rememberSaveable { mutableStateOf(false) }
@@ -84,7 +93,7 @@ fun StudioApp(viewModel: StudioViewModel, lifecycle: Lifecycle, transferViewMode
   var homeSection by rememberSaveable { mutableStateOf("landing") }
   var adminTab by rememberSaveable { mutableIntStateOf(0) }
   var recordings by rememberSaveable { mutableStateOf(false) }
-  var managedSession by remember { mutableStateOf<SurveySessionEntity?>(null) }
+  var managedSession by remember { mutableStateOf<SessionSummary?>(null) }
 
   fun startRecordingTask(task: SurveyPackage) {
     if (recorderSettings.shouldAsk) startTask = task
@@ -96,9 +105,10 @@ fun StudioApp(viewModel: StudioViewModel, lifecycle: Lifecycle, transferViewMode
   }
 
   val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-    uri?.let(viewModel::importTask)
+    uri?.let(transferViewModel::readFile)
   }
-  val taskExportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json"), viewModel::exportTask)
+  val csvPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let(csvViewModel::read) }
+  val csvTemplate = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv"), csvViewModel::saveTemplate)
   fun showExportFailure(message: String) {
     scope.launch { toast.show(ActionToast.Builder(message).duration(3_000L).setY(12.dp).build()) }
   }
@@ -107,6 +117,9 @@ fun StudioApp(viewModel: StudioViewModel, lifecycle: Lifecycle, transferViewMode
   }
   fun exportRecording(id: String) {
     viewModel.prepareResultExport(id, onReady = { resultExportLauncher.launch(it) }, onFailure = ::showExportFailure)
+  }
+  fun exportResults(ids: List<String>, positions: List<Int>? = null, takeIds: List<String>? = null) {
+    viewModel.prepareResultsExport(ids, positions, takeIds, onReady = { resultExportLauncher.launch(it) }, onFailure = ::showExportFailure)
   }
   val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
     if (!granted) permissionDenied = true
@@ -125,6 +138,7 @@ fun StudioApp(viewModel: StudioViewModel, lifecycle: Lifecycle, transferViewMode
     when {
       capture != null -> viewModel.notify("请先停止录音")
       state.busy != null -> Unit
+      selectionBack.exitAction != null -> selectionBack.exitAction?.invoke()
       state.screen == StudioScreen.EDITOR -> if (state.draftChanged) discardDraft = true else viewModel.home()
       state.screen == StudioScreen.LIBRARY -> viewModel.leaveLibrary()
       state.screen == StudioScreen.HOME -> homeSection = "landing"
@@ -155,6 +169,7 @@ fun StudioApp(viewModel: StudioViewModel, lifecycle: Lifecycle, transferViewMode
     viewModel.clearSkippedItem(skipped)
   }
 
+  CompositionLocalProvider(LocalSelectionBack provides selectionBack) {
   Box(Modifier.fillMaxSize()) {
   Scaffold(
     topBar = {
@@ -178,7 +193,7 @@ fun StudioApp(viewModel: StudioViewModel, lifecycle: Lifecycle, transferViewMode
     }, snackbarHost = { SnackbarHost(snackbar) { AppSnackbar(it) } },
   ) { padding ->
     Box(Modifier.fillMaxSize().padding(padding)) {
-      val enabled = state.ready && state.busy == null && capture == null
+      val enabled = state.ready && state.busy == null && capture == null && !transfer.busy && !csv.busy
       if (!state.ready) {
         Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
           Text("正在初始化…")
@@ -189,40 +204,62 @@ fun StudioApp(viewModel: StudioViewModel, lifecycle: Lifecycle, transferViewMode
           onSettings = viewModel::settings,
           adminTab = adminTab, onAdminTab = { adminTab = it }, onDefault = ::startDefaultRecording,
           recordings = recordings, onRecordings = { recordings = it },
-          onStart = ::startRecordingTask, onResume = viewModel::resume, onManageSession = { managedSession = it },
-          onEdit = { viewModel.edit(it) }, onCopy = { viewModel.edit(it, copy = true) },
+          onStart = { viewModel.loadPackage(it, ::startRecordingTask) }, onResume = viewModel::resume, onManageSession = { managedSession = it },
+          onEdit = { viewModel.loadPackage(it) { task -> viewModel.edit(task) } },
+          onCopy = { viewModel.loadPackage(it) { task -> viewModel.edit(task, copy = true) } },
           onNew = viewModel::newPackage, onImport = { importLauncher.launch(arrayOf("*/*")) },
+          onCsv = { csvPicker.launch(arrayOf("text/*", "application/octet-stream")) },
+          onCsvTemplate = { csvTemplate.launch("wanluk-survey-template.csv") }, onDrafts = { showDrafts = true },
           onImportQr = transferViewModel::openImport, onExportQr = transferViewModel::generate,
-          libraryContent = { active -> WordLibrary(false, enabled, viewModel::addWords,
-            onCreate = viewModel::createPackage, active = active) },
-          onExport = { taskExportLauncher.launch(viewModel.prepareTaskExport(it)) })
+          libraryContent = { active, selecting, onSelecting -> WordLibrary(false, enabled, viewModel::addWords,
+            onCreate = viewModel::createPackage, active = active, multiSelecting = selecting, onMultiSelecting = onSelecting,
+            onExport = transferViewModel::generateWords) },
+          onExport = { transferViewModel.generateZip(listOf(it)) }, onBatchExport = transferViewModel::generateZip,
+          onBatchCopy = viewModel::copyPackages, onBatchDelete = viewModel::deletePackages,
+          onExportSessions = { exportResults(it) }, onDeleteSessions = viewModel::deleteSessions,
+          onCleanup = if (cleanupCount > 0) viewModel::showCleanup else null)
         StudioScreen.SETTINGS -> RecorderSettingsScreen(recorderSettings, enabled,
           viewModel::saveRecorderSettings, viewModel::saveRecordingMode, viewModel::saveThemeMode)
         StudioScreen.EDITOR -> state.draft?.let { draft ->
-          SurveyEditor(draft, enabled, viewModel::updateDraft, { viewModel.library(picking = true) }, viewModel::saveDraft)
+          Column(Modifier.fillMaxSize()) {
+            state.draftStatus?.let { status ->
+              Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(status, Modifier.weight(1f), style = MaterialTheme.typography.labelSmall,
+                  color = if (status.contains("失败")) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+                if (status.contains("失败")) TextButton(onClick = viewModel::retryDraft, enabled = enabled) { Text("重试") }
+              }
+            }
+            Box(Modifier.weight(1f)) {
+              SurveyEditor(draft, enabled, viewModel::updateDraft, { viewModel.library(picking = true) }, viewModel::saveDraft,
+                viewModel::resolveItem, onExport = transferViewModel::generateTask)
+            }
+          }
         }
         StudioScreen.LIBRARY -> WordLibrary(state.pickingWords, enabled, viewModel::addWords,
           creating = state.creatingPackage,
           maxSelection = minOf(SurveyPackage.MAX_ITEMS - (state.draft?.items?.size ?: 0),
             SurveyPackage.MAX_STEPS - (state.draft?.totalSteps ?: 0)).coerceAtLeast(0),
           onCreate = viewModel::createPackage)
-        StudioScreen.SESSION -> detail?.takeIf { it.session.id == selectedSessionId && recordingTask?.sessionId == it.session.id }?.let { current ->
+        StudioScreen.SESSION -> detail?.takeIf { it.session.id == selectedSessionId }?.let { current ->
           key(current.session.id) {
-            RecordingScreen(current, requireNotNull(recordingTask).task, enabled, capture, viewModel.meter, trial, playing,
+            RecordingScreen(current, enabled, capture, viewModel.meter, trial, playing,
               onRecord = { held -> requestRecording(false, held) }, onTrial = { requestRecording(true) },
-              holdToRecord = recorderSettings.recordingMode == RecordingMode.HOLD,
+              holdToRecord = current.planType != RecordingPlanType.PASSAGE && recorderSettings.recordingMode == RecordingMode.HOLD,
               onStop = viewModel::stopRecording, onPlay = { viewModel.play(it) },
               onPlayTrial = { viewModel.play(isTrial = true) }, onStopPlayback = viewModel::stopPlayback,
               onPosition = viewModel::position, onSkip = viewModel::skip, onNote = viewModel::note,
               onSkipReason = viewModel::saveSkipReason,
               noteDraft = noteDraft, onNoteChange = viewModel::changeNote,
-              onAdopt = viewModel::adopt, busy = state.busy, toastHost = { ActionToastHost(toast) },
-              onFinish = { viewModel.finishSession {
+              onAdopt = viewModel::adopt, onReview = viewModel::review, busy = state.busy, toastHost = { ActionToastHost(toast) },
+              onFinish = { viewModel.finishSession { summary ->
                 homeSection = "record"
                 recordings = true
-                finishedSessionId = current.session.id
+                finishedSessionId = summary.id
               } },
-              onExport = { exportRecording(current.session.id) })
+              onExport = { exportRecording(current.session.id) },
+              onExportSteps = { exportResults(listOf(current.session.id), positions = it) },
+              onExportTakes = { exportResults(listOf(current.session.id), takeIds = it) },
+              onClearSteps = viewModel::clearSteps, onDeleteTakes = viewModel::deleteTakes)
           }
         } ?: Box(Modifier.padding(24.dp)) { Text("正在载入录制任务…") }
       }
@@ -234,6 +271,7 @@ fun StudioApp(viewModel: StudioViewModel, lifecycle: Lifecycle, transferViewMode
   }
   if (state.screen != StudioScreen.SESSION) ActionToastHost(toast, Modifier.fillMaxSize().systemBarsPadding())
   }
+  }
 
   LaunchedEffect(state.screen) {
     if (state.screen == StudioScreen.SESSION) { startTask = null; startDefault = false }
@@ -241,15 +279,18 @@ fun StudioApp(viewModel: StudioViewModel, lifecycle: Lifecycle, transferViewMode
   }
   finishedSessionId?.let { id ->
     AppDialog(onDismissRequest = { if (state.busy == null) finishedSessionId = null },
-      symbol = ActionSymbol.FINISH, title = { Text("是否导出？") }, text = { Text("进度已保存，可导出录音 ZIP。") },
+      symbol = ActionSymbol.FINISH, title = { Text("进度已保存") }, text = {
+        val summary = sessions.firstOrNull { it.id == id }
+        Text(summary?.let { "已录 ${it.recordedSteps} 条 · 跳过 ${it.skippedSteps} 条 · 待录 ${it.pendingSteps} 条\n可立即导出录音 ZIP，或稍后继续处理。" } ?: "可立即导出录音 ZIP，或稍后继续处理。")
+      },
       confirmButton = { Button(onClick = { finishedSessionId = null; exportRecording(id) },
         enabled = state.busy == null) { Text("立即导出") } },
       dismissButton = { TextButton(onClick = { finishedSessionId = null }, enabled = state.busy == null) { Text("稍后") } })
   }
   managedSession?.let { session -> RecordingSessionDialog(session, state.busy == null,
     onDismiss = { managedSession = null },
-    onSave = { title, alias, dialect ->
-      viewModel.updateSessionInfo(session.id, title, alias, dialect) { managedSession = null }
+    onSave = { title, alias, dialect, researchCode, location, collector ->
+      viewModel.updateSessionInfo(session.id, title, alias, dialect, researchCode, location, collector) { managedSession = null }
     },
     onDelete = { viewModel.deleteSession(session.id) { managedSession = null } },
     onExport = { managedSession = null; exportRecording(session.id) }) }
@@ -265,12 +306,30 @@ fun StudioApp(viewModel: StudioViewModel, lifecycle: Lifecycle, transferViewMode
     onDismiss = { startTask = null }) { profile ->
     viewModel.startSession(task, profile)
   } }
-  SurveyTransferDialogs(transferViewModel, transfer,
-    onExportJson = { taskExportLauncher.launch(viewModel.prepareTaskExport(it)) })
+  SurveyTransferDialogs(transferViewModel, transfer)
+  SurveyCsvDialog(csv, csvViewModel, viewModel::csvDraft)
+  if (showDrafts) LocalDraftsDialog(drafts, state.busy == null, onDismiss = { showDrafts = false },
+    onResume = { showDrafts = false; viewModel.resumeDraft(it) }, onDelete = viewModel::deleteLocalDraft)
+  batchResult?.let { result -> AppDialog(onDismissRequest = viewModel::clearBatchResult,
+    symbol = ActionSymbol.INFO, title = { Text(result.title) }, text = {
+      Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("已完成 ${result.succeeded} 项")
+        result.failures.forEach { Text(it, color = MaterialTheme.colorScheme.error) }
+        if (result.cleanup.isNotEmpty()) Text("数据已移除，${result.cleanup.sumOf { it.takeIds?.size ?: 1 }} 项音频尚未清理，可重试。", color = MaterialTheme.colorScheme.error)
+      }
+    }, confirmButton = { TextButton(onClick = viewModel::clearBatchResult, enabled = state.busy == null) { Text("完成") } },
+    dismissButton = if (result.cleanup.isNotEmpty()) ({
+      Button(onClick = viewModel::retryCleanup, enabled = state.busy == null) { Text("重试清理") }
+    }) else null) }
   if (discardDraft) AppDialog(onDismissRequest = { discardDraft = false },
-    symbol = ActionSymbol.EDIT, title = { Text("离开编辑器？") }, text = { Text("未保存的修改将丢失。") },
-    confirmButton = { Button(onClick = { discardDraft = false; viewModel.home() }) { Text("放弃修改") } },
-    dismissButton = { TextButton(onClick = { discardDraft = false }) { Text("继续编辑") } })
+    symbol = ActionSymbol.EDIT, title = { Text("离开编辑器？") }, text = { Text("保留为本机草稿后，可从更多菜单中的「本机草稿」继续编辑。") },
+    confirmButton = { Button(onClick = { discardDraft = false; viewModel.home() }) { Text("保留草稿并离开") } },
+    dismissButton = {
+      Row {
+        TextButton(onClick = { discardDraft = false; viewModel.discardDraft() }) { Text("丢弃", color = MaterialTheme.colorScheme.error) }
+        TextButton(onClick = { discardDraft = false }) { Text("继续编辑") }
+      }
+    })
   if (permissionDenied) AppDialog(onDismissRequest = { permissionDenied = false },
     symbol = ActionSymbol.MIC, title = { Text("需要麦克风权限") }, text = { Text("请在系统设置中允许使用麦克风。") },
     confirmButton = { Button(onClick = {
@@ -296,18 +355,24 @@ fun StudioApp(viewModel: StudioViewModel, lifecycle: Lifecycle, transferViewMode
 }
 
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 private fun StudioHome(
-  packages: List<SurveyPackage>, sessions: List<SurveySessionEntity>, enabled: Boolean,
+  packages: List<SurveyPackageSummary>, sessions: List<SessionSummary>, enabled: Boolean,
   section: String, onSection: (String) -> Unit,
   onSettings: () -> Unit,
   adminTab: Int, onAdminTab: (Int) -> Unit, onDefault: () -> Unit,
   recordings: Boolean, onRecordings: (Boolean) -> Unit,
-  onStart: (SurveyPackage) -> Unit, onResume: (String) -> Unit, onEdit: (SurveyPackage) -> Unit,
-  onManageSession: (SurveySessionEntity) -> Unit,
-  onCopy: (SurveyPackage) -> Unit, onNew: () -> Unit, onImport: () -> Unit,
-  libraryContent: @Composable (Boolean) -> Unit,
-  onExport: (SurveyPackage) -> Unit,
-  onImportQr: () -> Unit, onExportQr: (SurveyPackage) -> Unit,
+  onStart: (SurveyPackageSummary) -> Unit, onResume: (String) -> Unit, onEdit: (SurveyPackageSummary) -> Unit,
+  onManageSession: (SessionSummary) -> Unit,
+  onCopy: (SurveyPackageSummary) -> Unit, onNew: () -> Unit, onImport: () -> Unit,
+  onCsv: () -> Unit, onCsvTemplate: () -> Unit, onDrafts: () -> Unit,
+  libraryContent: @Composable (Boolean, Boolean, (Boolean) -> Unit) -> Unit,
+  onExport: (SurveyPackageSummary) -> Unit,
+  onImportQr: () -> Unit, onExportQr: (SurveyPackageSummary) -> Unit,
+  onBatchExport: (List<SurveyPackageSummary>) -> Unit,
+  onBatchCopy: (List<SurveyPackageSummary>) -> Unit, onBatchDelete: (List<SurveyPackageSummary>) -> Unit,
+  onExportSessions: (List<String>) -> Unit, onDeleteSessions: (List<String>) -> Unit,
+  onCleanup: (() -> Unit)?,
 ) {
   if (section == "landing") {
     StudioLanding(enabled, onStart = { onSection("record") }, onAdmin = { onSection("admin") }, onSettings = onSettings)
@@ -319,7 +384,35 @@ private fun StudioHome(
     rememberPagerState(initialPage = if (admin) adminTab else if (recordings) 1 else 0, pageCount = { 2 })
   }
   val scope = rememberCoroutineScope()
+  val allPlans = remember(packages, admin) {
+    val libraryId = RecordingTaskSnapshot.LIBRARY_PACKAGE_ID
+    (packages.filterNot { it.packageId == libraryId } + SurveyPackageSummary(libraryId,
+      BuiltinSurveys.revision(libraryId), BuiltinSurveys.title(libraryId), 0, 0, "按字库顺序逐条录制", ""))
+      .sortedBy { BuiltinSurveys.rank(it.packageId) }
+  }
+  var packageQuery by rememberSaveable(section) { mutableStateOf("") }
+  var sessionQuery by rememberSaveable(section) { mutableStateOf("") }
+  var sessionFilter by rememberSaveable { mutableStateOf("") }
+  val plans = remember(allPlans, packageQuery) { allPlans.filter { task ->
+    listOf(task.title, task.description, task.dialect).any { it.contains(packageQuery.trim(), ignoreCase = true) }
+  } }
+  val visibleSessions = remember(sessions, sessionQuery, sessionFilter) { sessions.filter { session ->
+    listOf(session.title, session.speakerAlias, session.dialect, session.researchCode, session.collectionLocation, session.collector)
+      .any { it.contains(sessionQuery.trim(), ignoreCase = true) } && when (sessionFilter) {
+        "pending" -> session.pendingSteps > 0; "export" -> session.needsExport; else -> true
+      }
+  } }
+  val wordPage = admin && pager.currentPage == 1
+  val sessionPage = !admin && pager.currentPage == 1
+  val keys = if (wordPage) emptyList() else if (sessionPage) visibleSessions.map { it.id } else plans.map { it.selectionKey() }
+  val selection = key(section) { rememberMultiSelection(keys, enabled) }
+  var wordSelecting by rememberSaveable(section) { mutableStateOf(false) }
+  var previousPage by rememberSaveable(section) { mutableIntStateOf(pager.currentPage) }
+  var deleting by remember { mutableStateOf(false) }
+  val chosenPlans = plans.filter { it.selectionKey() in selection.selected }
+  val removable = chosenPlans.filterNot { BuiltinSurveys.isBuiltin(it.packageId) }
   LaunchedEffect(admin, pager.currentPage) {
+    if (previousPage != pager.currentPage) { selection.exit(); wordSelecting = false; deleting = false; previousPage = pager.currentPage }
     if (admin) onAdminTab(pager.currentPage) else onRecordings(pager.currentPage == 1)
   }
   Column(Modifier.fillMaxSize()) {
@@ -336,32 +429,79 @@ private fun StudioHome(
       Box {
         MoreButton(enabled, onClick = { menu = true })
         DropdownMenu(menu, onDismissRequest = { menu = false }) {
-          DropdownMenuItem(leadingIcon = { ActionIcon(ActionSymbol.QR) }, text = { Text("二维码导入") }, onClick = { menu = false; onImportQr() })
-          DropdownMenuItem(leadingIcon = { ActionIcon(ActionSymbol.IMPORT) }, text = { Text("导入 JSON 文件") }, onClick = { menu = false; onImport() })
+          DropdownMenuItem(leadingIcon = { ActionIcon(ActionSymbol.MULTISELECT) }, text = { Text("多选") },
+            enabled = !selection.active && !wordSelecting, onClick = {
+              menu = false
+              if (wordPage) wordSelecting = true else selection.enter()
+            })
+          DropdownMenuItem(leadingIcon = { ActionIcon(ActionSymbol.QR) }, text = { Text("扫一扫") }, onClick = { menu = false; onImportQr() })
+          DropdownMenuItem(leadingIcon = { ActionIcon(ActionSymbol.IMPORT) }, text = { Text("从文件导入") }, onClick = { menu = false; onImport() })
+          DropdownMenuItem(leadingIcon = { ActionIcon(ActionSymbol.IMPORT) }, text = { Text("从 CSV 生成调查包") }, onClick = { menu = false; onCsv() })
+          DropdownMenuItem(leadingIcon = { ActionIcon(ActionSymbol.EXPORT) }, text = { Text("保存 CSV 模板") }, onClick = { menu = false; onCsvTemplate() })
+          DropdownMenuItem(leadingIcon = { ActionIcon(ActionSymbol.EDIT) }, text = { Text("本机草稿") }, onClick = { menu = false; onDrafts() })
+          if (onCleanup != null) DropdownMenuItem(leadingIcon = { ActionIcon(ActionSymbol.TRASH) },
+            text = { Text("重试音频清理") }, onClick = { menu = false; onCleanup() })
         }
       }
+    }
+    if (!wordPage) {
+      OutlinedTextField(if (sessionPage) sessionQuery else packageQuery, {
+        if (sessionPage) sessionQuery = it.take(100) else packageQuery = it.take(100)
+      }, Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), singleLine = true,
+        placeholder = { Text(if (sessionPage) "搜索录制、研究编号、地点" else "搜索调查包") }, enabled = enabled,
+        leadingIcon = { ActionIcon(ActionSymbol.SEARCH) })
+      if (sessionPage) FlowRow(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        listOf("" to "全部", "pending" to "有待录题", "export" to "待导出").forEach { (value, label) ->
+          FilterChip(sessionFilter == value, { sessionFilter = value }, enabled = enabled, label = { Text(label) })
+        }
+      }
+    }
+    if (selection.active && !wordPage) Box(Modifier.padding(horizontal = 16.dp)) {
+      SelectionToolbar(selection, enabled) { selection.all(keys) }
     }
     HorizontalPager(state = pager, modifier = Modifier.weight(1f), userScrollEnabled = enabled,
       verticalAlignment = Alignment.Top) { page ->
       if (admin) {
         if (page == 0) Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-          SurveyPackageList(packages, enabled, true, onStart, onEdit, onCopy, onExportQr, onExport, Modifier.weight(1f))
-          Button(onClick = onNew, enabled = enabled,
+          SurveyPackageList(plans, enabled, true, onStart, onEdit, onCopy, onExportQr, onExport, Modifier.weight(1f), selection = selection, onDelete = { onBatchDelete(listOf(it)) })
+          if (!selection.active) Button(onClick = onNew, enabled = enabled,
             modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp).heightIn(min = 48.dp)) {
             ActionIcon(ActionSymbol.ADD); Spacer(Modifier.width(8.dp)); Text("新建调查包")
           }
-        } else libraryContent(pager.currentPage == 1)
-      } else if (page == 1) RecordingList(sessions, enabled, onResume, onManageSession)
-      else SurveyPackageList(packages, enabled, false, onStart, onEdit, onCopy, onExportQr, onExport,
-        Modifier.fillMaxSize().padding(horizontal = 16.dp), onDefault = onDefault)
+        } else libraryContent(pager.currentPage == 1, wordSelecting) { wordSelecting = it }
+      } else if (page == 1) RecordingList(visibleSessions, enabled, onResume, onManageSession, selection)
+      else SurveyPackageList(plans, enabled, false, onStart, onEdit, onCopy, onExportQr, onExport,
+        Modifier.fillMaxSize().padding(horizontal = 16.dp), onDefault = onDefault, selection = selection, onDelete = { onBatchDelete(listOf(it)) })
+    }
+    if (selection.active && !wordPage) Column(Modifier.padding(horizontal = 16.dp)) {
+      if (!sessionPage && chosenPlans.size > com.wanluk.libsurveytransfer.SurveyTransferFiles.MAX_PLANS) {
+        Text("一次最多导出 32 个方案", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+      }
+      SelectionActions {
+        TextButton(onClick = { if (sessionPage) onExportSessions(selection.ids) else onBatchExport(chosenPlans) },
+          enabled = enabled && selection.ids.isNotEmpty() && (sessionPage || chosenPlans.size <= com.wanluk.libsurveytransfer.SurveyTransferFiles.MAX_PLANS)) { Text("导出 ZIP") }
+        if (!sessionPage) TextButton(onClick = { onBatchCopy(chosenPlans) }, enabled = enabled && chosenPlans.isNotEmpty()) { Text("复制") }
+        TextButton(onClick = { deleting = true }, enabled = enabled && if (sessionPage) selection.ids.isNotEmpty() else removable.isNotEmpty()) {
+          Text("删除", color = MaterialTheme.colorScheme.error)
+        }
+      }
     }
   }
+  if (deleting) DeleteSelectionDialog(if (sessionPage) "删除 ${selection.ids.size} 条录制？" else "删除 ${removable.size} 个调查包？",
+    if (sessionPage) "所选录制及全部音频将删除，无法恢复。" else
+      "删除所选调查包的全部版本，已有录制保留。${if (chosenPlans.size > removable.size) "保留 ${chosenPlans.size - removable.size} 个内置预设。" else ""}",
+    enabled, onDismiss = { deleting = false }, onDelete = {
+      deleting = false
+      if (sessionPage) onDeleteSessions(selection.ids) else onBatchDelete(removable)
+    })
 }
+
+private fun SurveyPackageSummary.selectionKey(): String = "$packageId:$revision"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun RecordingList(sessions: List<SurveySessionEntity>, enabled: Boolean,
-  onResume: (String) -> Unit, onManage: (SurveySessionEntity) -> Unit) {
+private fun RecordingList(sessions: List<SessionSummary>, enabled: Boolean,
+  onResume: (String) -> Unit, onManage: (SessionSummary) -> Unit, selection: MultiSelection) {
       LazyColumn(Modifier.fillMaxSize().padding(horizontal = 16.dp), contentPadding = PaddingValues(vertical = 8.dp)) {
         if (sessions.isEmpty()) item {
           EmptyState(ActionSymbol.RECORDINGS, "暂无录制", "从「录制方案」开始")
@@ -369,19 +509,23 @@ private fun RecordingList(sessions: List<SurveySessionEntity>, enabled: Boolean,
         items(sessions, key = { it.id }) { session ->
           Surface(color = MaterialTheme.colorScheme.background,
             modifier = Modifier.fillMaxWidth().combinedClickable(enabled = enabled,
-            onClickLabel = "打开录制", onClick = { onResume(session.id) },
-            onLongClickLabel = "管理录制", onLongClick = { onManage(session) })) {
+            onClickLabel = if (selection.active) "选择录制" else "打开录制", onClick = { if (selection.active) selection.toggle(session.id) else onResume(session.id) },
+            onLongClickLabel = "管理录制", onLongClick = { if (selection.active) selection.toggle(session.id) else onManage(session) })) {
             Column(Modifier.padding(vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
               Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(session.title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium,
                   maxLines = 2, overflow = TextOverflow.Ellipsis)
-                MoreButton(enabled, onClick = { onManage(session) })
+                if (selection.active) Checkbox(session.id in selection.selected, { selection.toggle(session.id) }, enabled = enabled)
+                else MoreButton(enabled, onClick = { onManage(session) })
               }
               Text(listOf(session.speakerAlias, session.dialect).filter { it.isNotBlank() }.joinToString(" · ").ifBlank { "未填写录制者信息" }, style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
               LinearProgressIndicator(progress = { session.completedSteps.toFloat() / session.totalSteps.coerceAtLeast(1) }, modifier = Modifier.fillMaxWidth())
               Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("${session.completedSteps} / ${session.totalSteps}", style = MaterialTheme.typography.labelLarge)
+                Column {
+                  Text("${session.completedSteps} / ${session.totalSteps}", style = MaterialTheme.typography.labelLarge)
+                  Text(if (session.needsExport) "待导出" else "已导出当前内容", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                   Text(if (session.completedSteps == session.totalSteps) "查看录制" else "继续",
                     style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
@@ -397,26 +541,12 @@ private fun RecordingList(sessions: List<SurveySessionEntity>, enabled: Boolean,
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun SurveyPackageList(packages: List<SurveyPackage>, enabled: Boolean, admin: Boolean,
-  onStart: (SurveyPackage) -> Unit, onEdit: (SurveyPackage) -> Unit, onCopy: (SurveyPackage) -> Unit,
-  onExportQr: (SurveyPackage) -> Unit, onExport: (SurveyPackage) -> Unit, modifier: Modifier = Modifier,
-  onDefault: (() -> Unit)? = null) {
+private fun SurveyPackageList(packages: List<SurveyPackageSummary>, enabled: Boolean, admin: Boolean,
+  onStart: (SurveyPackageSummary) -> Unit, onEdit: (SurveyPackageSummary) -> Unit, onCopy: (SurveyPackageSummary) -> Unit,
+  onExportQr: (SurveyPackageSummary) -> Unit, onExport: (SurveyPackageSummary) -> Unit, modifier: Modifier = Modifier,
+  onDefault: (() -> Unit)? = null, selection: MultiSelection, onDelete: (SurveyPackageSummary) -> Unit) {
+  var deleting by remember { mutableStateOf<SurveyPackageSummary?>(null) }
   LazyColumn(modifier, contentPadding = PaddingValues(vertical = 8.dp)) {
-    if (!admin && onDefault != null) item(key = "default-plan") {
-      Surface(onClick = onDefault, enabled = enabled, modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.background) {
-        Row(Modifier.padding(vertical = 20.dp), verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-          Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("完整字库", style = MaterialTheme.typography.titleMedium)
-            Text("默认方案", style = MaterialTheme.typography.bodySmall,
-              color = MaterialTheme.colorScheme.onSurfaceVariant)
-          }
-          ActionIcon(ActionSymbol.NEXT, Modifier.size(20.dp))
-        }
-      }
-      HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-    }
     if (packages.isEmpty()) item {
       EmptyState(ActionSymbol.LIBRARY, "暂无调查包", if (admin) "新建或从更多菜单导入" else "从更多菜单导入")
     }
@@ -425,27 +555,40 @@ private fun SurveyPackageList(packages: List<SurveyPackage>, enabled: Boolean, a
       Surface(color = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxWidth().combinedClickable(enabled = enabled,
         onClickLabel = if (admin) "编辑调查包" else "开始录制",
-        onClick = { if (admin) onEdit(task) else onStart(task) },
+        onClick = {
+          when {
+            selection.active -> selection.toggle(task.selectionKey())
+            admin -> onEdit(task)
+            task.packageId == RecordingTaskSnapshot.LIBRARY_PACKAGE_ID && onDefault != null -> onDefault()
+            else -> onStart(task)
+          }
+        },
         onLongClickLabel = if (admin) "更多" else null,
-        onLongClick = if (admin) ({ taskMenu = true }) else null)) {
+        onLongClick = if (admin) ({ if (selection.active) selection.toggle(task.selectionKey()) else taskMenu = true }) else null)) {
         Row(Modifier.padding(vertical = 16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
           Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(task.title, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            Text("${task.items.size} 字目", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(BuiltinSurveys.subtitle(task.packageId, task.itemCount) ?: "${task.itemCount} 题",
+              style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
           }
-          if (admin) Box {
+          if (selection.active) Checkbox(task.selectionKey() in selection.selected, { selection.toggle(task.selectionKey()) }, enabled = enabled)
+          else Box {
             MoreButton(enabled, onClick = { taskMenu = true })
             DropdownMenu(taskMenu, onDismissRequest = { taskMenu = false }) {
               DropdownMenuItem(leadingIcon = { ActionIcon(ActionSymbol.COPY) }, text = { Text("复制") }, onClick = { taskMenu = false; onCopy(task) })
               DropdownMenuItem(leadingIcon = { ActionIcon(ActionSymbol.QR) }, text = { Text("分享二维码") }, onClick = { taskMenu = false; onExportQr(task) })
-              DropdownMenuItem(leadingIcon = { ActionIcon(ActionSymbol.EXPORT) }, text = { Text("导出 JSON 文件") }, onClick = { taskMenu = false; onExport(task) })
+              DropdownMenuItem(leadingIcon = { ActionIcon(ActionSymbol.EXPORT) }, text = { Text("导出 ZIP") }, onClick = { taskMenu = false; onExport(task) })
+              DropdownMenuItem(leadingIcon = { ActionIcon(ActionSymbol.TRASH) }, text = { Text("删除调查包", color = MaterialTheme.colorScheme.error) },
+                enabled = !BuiltinSurveys.isBuiltin(task.packageId), onClick = { taskMenu = false; deleting = task })
             }
-          } else ActionIcon(ActionSymbol.NEXT)
+          }
         }
       }
       HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     }
   }
+  deleting?.let { task -> DeleteSelectionDialog("删除《${task.title}》？", "删除调查包的全部版本，已有录制及录音保留。此操作无法恢复。", enabled,
+    onDismiss = { deleting = null }, onDelete = { deleting = null; onDelete(task) }) }
 }
 
 @Composable
@@ -488,4 +631,23 @@ private fun StudioLanding(enabled: Boolean, onStart: () -> Unit, onAdmin: () -> 
       HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
     }
   }
+}
+
+@Composable
+private fun LocalDraftsDialog(drafts: List<DraftSummary>, enabled: Boolean, onDismiss: () -> Unit,
+  onResume: (String) -> Unit, onDelete: (String) -> Unit) {
+  var deleting by remember { mutableStateOf<DraftSummary?>(null) }
+  AppDialog(onDismissRequest = onDismiss, symbol = ActionSymbol.EDIT, title = { Text("本机草稿") }, text = {
+    if (drafts.isEmpty()) Text("暂无草稿") else LazyColumn(Modifier.heightIn(max = 360.dp)) {
+      items(drafts, key = { it.id }) { draft ->
+        Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
+          Text(draft.title.ifBlank { "未命名草稿" }, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+          TextButton(onClick = { onResume(draft.id) }, enabled = enabled) { Text("继续") }
+          IconButton(onClick = { deleting = draft }, enabled = enabled) { ActionIcon(ActionSymbol.TRASH, contentDescription = "丢弃草稿") }
+        }
+      }
+    }
+  }, confirmButton = { TextButton(onClick = onDismiss, enabled = enabled) { Text("关闭") } })
+  deleting?.let { draft -> DeleteSelectionDialog("丢弃《${draft.title.ifBlank { "未命名草稿" }}》？", "丢弃未发布的本机草稿，无法恢复。", enabled,
+    onDismiss = { deleting = null }, onDelete = { deleting = null; onDelete(draft.id) }) }
 }

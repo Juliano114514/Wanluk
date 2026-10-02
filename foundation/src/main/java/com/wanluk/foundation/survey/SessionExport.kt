@@ -1,7 +1,7 @@
 package com.wanluk.foundation.survey
 
 data class SessionExport(
-  val exportSchemaVersion: Int = 1,
+  val exportSchemaVersion: Int = 3,
   val sessionId: String,
   val speakerAlias: String,
   val dialect: String,
@@ -12,6 +12,11 @@ data class SessionExport(
   val steps: List<ExportStep>,
   val takes: List<ExportTake>,
   val title: String = task.title,
+  val contentRevision: Long = 0,
+  val researchCode: String = "",
+  val collectionLocation: String = "",
+  val collector: String = "",
+  val planType: RecordingPlanType = task.planType,
 )
 
 data class ExportStep(
@@ -40,4 +45,7 @@ data class ExportTake(
   val rms: Double,
   val clippedFraction: Double,
   val warning: String,
+  val reviewStatus: String = ReviewStatus.UNREVIEWED.value,
+  val audioFile: String = "",
+  val appliedGain: Double = 1.0,
 )

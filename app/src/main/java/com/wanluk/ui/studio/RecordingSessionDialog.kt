@@ -17,15 +17,19 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.wanluk.libroom.entity.SurveySessionEntity
+import com.wanluk.foundation.survey.SessionSummary
 
 @Composable
-internal fun RecordingSessionDialog(session: SurveySessionEntity, enabled: Boolean, onDismiss: () -> Unit,
-  onSave: (String, String, String) -> Unit, onDelete: () -> Unit, onExport: () -> Unit) {
+internal fun RecordingSessionDialog(session: SessionSummary, enabled: Boolean, onDismiss: () -> Unit,
+  onSave: (String, String, String, String, String, String) -> Unit, onDelete: () -> Unit, onExport: () -> Unit) {
   var page by rememberSaveable(session.id) { mutableStateOf("menu") }
   var title by rememberSaveable(session.id) { mutableStateOf(session.title) }
   var alias by rememberSaveable(session.id) { mutableStateOf(session.speakerAlias) }
   var dialect by rememberSaveable(session.id) { mutableStateOf(session.dialect) }
+  var researchCode by rememberSaveable(session.id) { mutableStateOf(session.researchCode) }
+  var location by rememberSaveable(session.id) { mutableStateOf(session.collectionLocation) }
+  var collector by rememberSaveable(session.id) { mutableStateOf(session.collector) }
+  var advanced by rememberSaveable(session.id) { mutableStateOf(false) }
   AppDialog(onDismissRequest = { if (enabled) onDismiss() },
     symbol = if (page == "delete") ActionSymbol.TRASH else ActionSymbol.RECORDINGS, title = {
     Text(when (page) { "edit" -> "录制信息"; "delete" -> "删除录制？"; else -> session.title })
@@ -39,7 +43,15 @@ internal fun RecordingSessionDialog(session: SurveySessionEntity, enabled: Boole
             label = { Text("录制者（选填）") }, singleLine = true)
           OutlinedTextField(dialect, { dialect = it.take(160) }, Modifier.fillMaxWidth(), enabled = enabled,
             label = { Text("方言（选填）") }, singleLine = true)
-          Text("只修改这条录制的信息。", style = MaterialTheme.typography.bodySmall)
+          TextButton(onClick = { advanced = !advanced }, enabled = enabled) { Text(if (advanced) "收起研究信息" else "研究信息（选填）") }
+          if (advanced) {
+            OutlinedTextField(researchCode, { researchCode = it.take(120) }, Modifier.fillMaxWidth(), enabled = enabled,
+              label = { Text("研究编号") }, singleLine = true)
+            OutlinedTextField(location, { location = it.take(160) }, Modifier.fillMaxWidth(), enabled = enabled,
+              label = { Text("采集地点") }, singleLine = true)
+            OutlinedTextField(collector, { collector = it.take(80) }, Modifier.fillMaxWidth(), enabled = enabled,
+              label = { Text("采集者") }, singleLine = true)
+          }
         }
         "delete" -> Text("将删除《${session.title}》的录制进度和全部本地录音，无法恢复。已导出的文件和录制方案仍保留。")
         else -> {
@@ -56,7 +68,7 @@ internal fun RecordingSessionDialog(session: SurveySessionEntity, enabled: Boole
     }
   }, confirmButton = {
     when (page) {
-      "edit" -> Button(onClick = { onSave(title, alias, dialect) }, enabled = enabled && title.isNotBlank()) { Text("保存") }
+      "edit" -> Button(onClick = { onSave(title, alias, dialect, researchCode, location, collector) }, enabled = enabled && title.isNotBlank()) { Text("保存") }
       "delete" -> Button(onClick = onDelete, enabled = enabled,
         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error, contentColor = MaterialTheme.colorScheme.onError)) { Text("删除") }
       else -> TextButton(onClick = onDismiss, enabled = enabled) { Text("关闭") }
