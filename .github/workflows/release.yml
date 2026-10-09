@@ -105,6 +105,25 @@ jobs:
           printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/wanluk-release.jks"
           test -s "$RUNNER_TEMP/wanluk-release.jks"
 
+      - name: Validate keystore and alias
+        shell: bash
+        env:
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          for secret_name in ANDROID_STORE_PASSWORD ANDROID_KEY_ALIAS; do
+            if [[ -z "${!secret_name}" ]]; then
+              echo "Missing $secret_name secret." >&2
+              exit 1
+            fi
+          done
+          if ! keytool -list -keystore "$RUNNER_TEMP/wanluk-release.jks" \
+            -storepass:env ANDROID_STORE_PASSWORD -alias "$ANDROID_KEY_ALIAS" >/dev/null 2>&1; then
+            echo 'Cannot open the keystore or find the alias. Check ANDROID_KEYSTORE_BASE64, ANDROID_STORE_PASSWORD and ANDROID_KEY_ALIAS.' >&2
+            exit 1
+          fi
+
       - name: Build signed APK
         shell: bash
         env:
