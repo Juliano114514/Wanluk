@@ -16,3 +16,10 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Local release signing material and generated APKs
+*.jks
+*.keystore
+/wanluk_key
+/keystore.properties
+/app/release/

@@ -218,3 +218,24 @@ Android minSdk 24，compile / targetSdk 36。applicationId 为 com.wanluk.app，
 18. 字目／词汇 120 秒、文段 600 秒、试音 15 秒；文段点击启停、长正文滚动、常亮恢复、后台保存与空间不足。核对 v3 分类在草稿、快照、CSV 及交换后的实际恢复，完整／批量／按题目／按版本导出的可读名称、唯一性、路径引用与 SHA-256。
 
 本轮保持手机本地流程，不提供备份恢复、桌面编辑器或云服务。后续可按研究需要扩展图片诱导题和 TextGrid 交换。
+
+## GitHub Actions release APK
+
+工作流：`.github/workflows/release.yml`。推送到 `main` 且 `app/build.gradle.kts` 中的 `versionName` 或 `versionCode` 相比推送前发生变化时，自动构建签名 APK、校验签名并发布 GitHub Release；其他代码改动不打包。也支持手动触发。使用 JDK 17、Android SDK 36 和 Build Tools 35.0.0，不发布到应用商店。
+
+在仓库 Settings → Secrets and variables → Actions 添加四项 Repository secrets：
+
+| 名称 | 内容 |
+| --- | --- |
+| `ANDROID_KEYSTORE_BASE64` | 已有 keystore 文件的 Base64 文本 |
+| `ANDROID_STORE_PASSWORD` | keystore 密码 |
+| `ANDROID_KEY_ALIAS` | Key alias |
+| `ANDROID_KEY_PASSWORD` | Key 密码 |
+
+日常发布：更新版本配置及 `VERSIONLOG.md`，提交并推送到 `main`，等待 Actions → Publish release APK 完成，然后从仓库 Releases 下载 APK 和 `SHA256SUMS.txt`。标签采用 `v版本名-code版本码`（例如 `v1.1.0-code2`），确保仅改变 versionCode 也有独立发布。已有同标签 Release 不覆盖。一次推送包含多个版本提交时，只发布推送后最终版本。
+
+手动打包：Actions → Publish release APK → Run workflow，选择要打包的分支。它会发布该分支当前版本，无须改变版本号。构建产物也保存在该次运行的 Artifacts 中，保留 14 天。缺失 Secret、构建失败或签名校验失败时不会发布 APK。
+
+版本取自 `app/build.gradle.kts`，工作流不自动修改版本。正式交付前按 `AGENTS.md` 同步版本和 `VERSIONLOG.md`；同次打包失败重试不再次升版。签名有效和构建成功不代替安装、录音、导出等真机验收。
+
+继续使用原有正式签名密钥以保持覆盖升级能力；密钥文件和密码不提交到仓库。CI 将密钥临时恢复到 runner 临时目录，结束时清理，只上传指定 APK。本机若需通过 Gradle 签名，设置上述三个签名信息环境变量及 `ANDROID_KEYSTORE_PATH`（keystore 绝对路径）。
