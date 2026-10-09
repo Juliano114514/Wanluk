@@ -13,4 +13,4 @@
 
 - 用户明确要求保持 `1.1.0` / versionCode `2`，本次配置、提交和首次云端打包不升级版本。
 - 增加 GitHub Actions：主分支版本变化自动构建签名 APK 并发布到 GitHub Releases，支持手动触发；补充密钥忽略规则、官方 Gradle 下载源及操作说明。
-- 验证状态：YAML、Bash、内嵌 Python 语法、版本变化／不变／手动触发分支及 diff 静态检查通过。首次自动触发成功，云端完成 release 编译及 lintVital，但 packageRelease 因密钥库密码不匹配失败，未发布 APK；增加构建前密钥库及 alias 校验，待更正 Secret 后重跑。未新增测试代码，未执行设备验证。
+- 验证状态：YAML、Bash、内嵌 Python 语法、版本变化／不变／手动触发分支及 diff 静态检查通过。首次自动触发成功，但 packageRelease 因密钥库密码不匹配失败；增加构建前密钥库及 alias 校验。用户更正 Secret 后，运行 [37907789338](https://github.com/Juliano114514/Wanluk/actions/runs/37907789338) 完成 assembleRelease、lintVital、APK 签名校验、产物上传及发布；[v1.1.0-code2](https://github.com/Juliano114514/Wanluk/releases/tag/v1.1.0-code2) 已包含 `Wanluk-1.1.0-2.apk` 和 `SHA256SUMS.txt`。未新增测试代码，未执行设备安装或运行验证。
